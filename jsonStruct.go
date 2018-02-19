@@ -17,3 +17,11 @@ type Connection struct {
 type NewPasswd struct {
 	Passwd 	string
 }
+
+type Message struct {
+	Id			string
+	IdSender	string
+	IdReceiver	string
+	Body		string
+	Timestamp	string
+}

@@ -10,8 +10,8 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	db := dbConn()
 	var id string
-	checkId := db.QueryRow("SELECT id FROM User WHERE mail ='" + r.PostFormValue("mail") + "'").Scan()
-	if checkId == sql.ErrNoRows {
+	row := db.QueryRow("SELECT id FROM User WHERE mail ='" + r.PostFormValue("mail") + "'").Scan()
+	if row == sql.ErrNoRows {
 		db.QueryRow("INSERT INTO User (type, firstName, lastName, passwd, birthdate, city, mail, tel) VALUES" +
 			"('" + r.PostFormValue("type") + "','"  + r.PostFormValue("firstName") + "','" + r.PostFormValue("lastName") +
 			"','" + r.PostFormValue("passwd") + "','" + r.PostFormValue("birthdate") + "','" + r.PostFormValue("city") +
@@ -31,9 +31,9 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	db := dbConn()
 	var id, firstname, lastname, birthdate, city, mail, tel string
-	check := db.QueryRow("SELECT id,firstname,lastname,birthdate,city,mail,tel FROM User WHERE mail ='" + r.PostFormValue("mail") + "' AND passwd ='" +
+	row := db.QueryRow("SELECT id,firstname,lastname,birthdate,city,mail,tel FROM User WHERE mail ='" + r.PostFormValue("mail") + "' AND passwd ='" +
 		r.PostFormValue("passwd") + "'").Scan(&id,&firstname,&lastname,&birthdate,&city,&mail,&tel)
-	if check != sql.ErrNoRows {
+	if row != sql.ErrNoRows {
 		UserConnection := Connection{}
 		UserConnection.Id = id
 		UserConnection.Firstname = firstname
@@ -53,8 +53,8 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 func Forgot(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	db := dbConn()
-	check := db.QueryRow("SELECT * FROM User WHERE mail = '" + r.PostFormValue("mail") + "'").Scan()
-	if check != sql.ErrNoRows {
+	row := db.QueryRow("SELECT * FROM User WHERE mail = '" + r.PostFormValue("mail") + "'").Scan()
+	if row != sql.ErrNoRows {
 		passwd := NewPasswd{}
 		passwd.Passwd = randomPasswd(12)
 		json,_ := json.Marshal(passwd)
