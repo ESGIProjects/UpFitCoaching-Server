@@ -20,8 +20,8 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		UserId := Id{}
 		UserId.Id = id
 		json,_ := json.Marshal(UserId)
-		w.Write(json)
 		w.WriteHeader(http.StatusCreated)
+		w.Write(json)
 	} else {
 		w.WriteHeader(http.StatusConflict)
 	}
