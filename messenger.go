@@ -10,8 +10,8 @@ func GetMessages(w http.ResponseWriter, r *http.Request) {
 	db := dbConn()
 	var id,idSender,idReceiver,body,timestamp string
 	test,_ := r.URL.Query()["id"]
-	rows,_ := db.Query("SELECT * FROM Message WHERE idSender='" + test[0] + "' OR idReceiver ='" +
-		test[0] + "'")
+	rows,_ := db.Query("SELECT id,idSender,idReceiver,body,timestamp FROM Message WHERE (idSender='" + test[0] + "' OR idReceiver ='" +
+		test[0] + "') AND deletedSender='0'")
 	defer rows.Close()
 	Messages := []Message{}
 	for rows.Next(){
