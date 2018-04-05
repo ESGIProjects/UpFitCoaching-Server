@@ -1,3 +1,5 @@
 .idea/*
-.DS_Store
-GoAPI
+vendor/*
+
+# Don't push the binary
+server
