@@ -18,5 +18,5 @@ func main() {
 	router.HandleFunc("/messenger/", SendMessage).Methods("POST")
 	router.HandleFunc("/messenger/", DeleteMessages).Methods("DELETE")
 
-    log.Fatal(http.ListenAndServe(":8000", router))
+    log.Fatal(http.ListenAndServe(":80", router))
 }
