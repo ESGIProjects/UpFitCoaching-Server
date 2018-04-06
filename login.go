@@ -60,14 +60,14 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 
 	// Format the response
 	user := UserInfo{}
-	user.id = id
-	user.userType = userType
-	user.mail = mail
-	user.firstName = firstName
-	user.lastName = lastName
-	user.birthDate = birthDate
-	user.city = city
-	user.phoneNumber = phoneNumber
+	user.Id = id
+	user.UserType = userType
+	user.Mail = mail
+	user.FirstName = firstName
+	user.LastName = lastName
+	user.BirthDate = birthDate
+	user.City = city
+	user.PhoneNumber = phoneNumber
 
 	json, _ := json.Marshal(user)
 
@@ -105,14 +105,14 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 
 	// Format the response
 	user := UserInfo{}
-	user.id = id
-	user.userType = userType
-	user.mail = mail
-	user.firstName = firstName
-	user.lastName = lastName
-	user.birthDate = birthDate
-	user.city = city
-	user.phoneNumber = phoneNumber
+	user.Id = id
+	user.UserType = userType
+	user.Mail = mail
+	user.FirstName = firstName
+	user.LastName = lastName
+	user.BirthDate = birthDate
+	user.City = city
+	user.PhoneNumber = phoneNumber
 
 	json, _ := json.Marshal(user)
 
@@ -142,7 +142,7 @@ func Forgot(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Format the response
-	newPassword := NewPassword{password: randomPasswd(12)}
+	newPassword := NewPassword{randomPasswd(12)}
 	json, _ := json.Marshal(newPassword)
 
 	// Send the response back

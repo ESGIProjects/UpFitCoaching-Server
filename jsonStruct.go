@@ -3,34 +3,34 @@ package main
 // Misc
 
 type ErrorMessage struct {
-	message	string
+	Message	string
 }
 
 // User management
 
 type UserInfo struct {
-	id			int64
-	userType	int
-	mail		string
-	firstName	string
-	lastName	string
-	birthDate	string
-	city		string
-	phoneNumber	string
+	Id			int64
+	UserType	int
+	Mail		string
+	FirstName	string
+	LastName	string
+	BirthDate	string
+	City		string
+	PhoneNumber	string
 }
 
 type CoachInfo struct {
-	id			int64
-	mail		string
-	firstName	string
-	lastName	string
-	address		string
-	city		string
-	phoneNumber	string
+	Id			int64
+	Mail		string
+	FirstName	string
+	LastName	string
+	Address		string
+	City		string
+	PhoneNumber	string
 }
 
 type NewPassword struct {
-	password	string
+	Password	string
 }
 
 // Messages
