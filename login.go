@@ -13,11 +13,9 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 	// Connecting to the database
 	db := dbConn()
 
-	//var id string
-	mail := r.PostFormValue("mail")
-
 	// Check if the user already exists
-	row := db.QueryRow("SELECT id FROM users WHERE mail = '" + mail + "'").Scan()
+	mail := r.PostFormValue("mail")
+	row := db.QueryRow("SELECT id FROM users WHERE mail = ?", mail).Scan()
 
 	if row != sql.ErrNoRows {
 		w.WriteHeader(http.StatusConflict)
@@ -40,41 +38,56 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Get the new user ID
 	id, err := res.LastInsertId()
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
+	// Format the response
 	UserId := Id{id}
 	json,_ := json.Marshal(UserId)
 
+	// Send the response back
 	w.WriteHeader(http.StatusCreated)
 	w.Write(json)
 
 }
 
 func SignIn(w http.ResponseWriter, r *http.Request) {
+	// Set the response header
 	w.Header().Set("Content-Type", "application/json")
+
+	// Connecting to the database
 	db := dbConn()
-	var id, firstname, lastname, birthdate, city, mail, tel string
-	row := db.QueryRow("SELECT id,firstname,lastname,birthdate,city,mail,tel FROM User WHERE mail ='" + r.PostFormValue("mail") + "' AND passwd ='" +
-		r.PostFormValue("passwd") + "'").Scan(&id,&firstname,&lastname,&birthdate,&city,&mail,&tel)
-	if row != sql.ErrNoRows {
-		UserConnection := Connection{}
-		UserConnection.Id = id
-		UserConnection.Firstname = firstname
-		UserConnection.Lastname = lastname
-		UserConnection.Birthdate = birthdate
-		UserConnection.City = city
-		UserConnection.Mail = mail
-		UserConnection.Tel = tel
-		json,_ := json.Marshal(UserConnection)
-		w.Write(json)
-		w.WriteHeader(http.StatusOK)
-	} else {
+
+	// Get the selected user
+	var id, userType, firstName, lastName, birthDate, city, phoneNumber string
+	mail := r.PostFormValue("mail")
+	password := r.PostFormValue("password")
+	row := db.QueryRow("SELECT id, type, firstName, lastName, birthDate, city, phoneNumber FROM users WHERE mail = ? AND password = ?", mail, password).Scan(&id, &userType, &firstName, &lastName, &birthDate, &city, &phoneNumber)
+
+	if row == sql.ErrNoRows {
 		w.WriteHeader(http.StatusNotFound)
+		return
 	}
+
+	// Format the response
+	UserConnection := Connection{}
+	UserConnection.Id = id
+	UserConnection.Firstname = firstName
+	UserConnection.Lastname = lastName
+	UserConnection.Birthdate = birthDate
+	UserConnection.City = city
+	UserConnection.Mail = mail
+	UserConnection.Tel = phoneNumber
+
+	json,_ := json.Marshal(UserConnection)
+
+	// Send the response back
+	w.Write(json)
+	w.WriteHeader(http.StatusOK)
 }
 
 func Forgot(w http.ResponseWriter, r *http.Request) {
