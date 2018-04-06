@@ -22,8 +22,8 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		error := ErrorMessage{"user_already_exists"}
 		json, _ := json.Marshal(error)
 
-		w.Write(json)
 		w.WriteHeader(http.StatusConflict)
+		w.Write(json)
 		return
 	}
 
@@ -42,8 +42,8 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		error := ErrorMessage{"user_insert_failed"}
 		json, _ := json.Marshal(error)
 
-		w.Write(json)
 		w.WriteHeader(http.StatusNotModified)
+		w.Write(json)
 		return
 	}
 
@@ -53,8 +53,8 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		error := ErrorMessage{"internal_error"}
 		json, _ := json.Marshal(error)
 
-		w.Write(json)
 		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(json)
 		return
 	}
 
@@ -86,16 +86,10 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 	mail := r.PostFormValue("mail")
 	password := r.PostFormValue("password")
 
-	println("Mail from call: ", mail)
-
 	row := db.QueryRow("SELECT id, type, mail, firstName, lastName, birthDate, city, phoneNumber FROM users WHERE mail = ? AND password = ?", mail, password).Scan(&id, &userType, &mail, &firstName, &lastName, &birthDate, &city, &phoneNumber)
-
-	print("Row value: ", row)
 
 	// If user does not exist
 	if row == sql.ErrNoRows {
-		print("sqlErrNoRows !!!")
-
 		error := ErrorMessage{"user_not_exist"}
 		json, _ := json.Marshal(error)
 
@@ -118,8 +112,8 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 	json, _ := json.Marshal(user)
 
 	// Send the response back
-	w.Write(json)
 	w.WriteHeader(http.StatusOK)
+	w.Write(json)
 }
 
 func Forgot(w http.ResponseWriter, r *http.Request) {
@@ -137,8 +131,8 @@ func Forgot(w http.ResponseWriter, r *http.Request) {
 		error := ErrorMessage{"user_not_exist"}
 		json, _ := json.Marshal(error)
 
-		w.Write(json)
 		w.WriteHeader(http.StatusNotFound)
+		w.Write(json)
 		return
 	}
 
@@ -147,6 +141,6 @@ func Forgot(w http.ResponseWriter, r *http.Request) {
 	json, _ := json.Marshal(newPassword)
 
 	// Send the response back
-	w.Write(json)
 	w.WriteHeader(http.StatusOK)
+	w.Write(json)
 }
