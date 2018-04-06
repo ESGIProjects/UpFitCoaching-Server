@@ -1,22 +1,39 @@
 package main
 
-type Id struct {
-	Id	int64
+// Misc
+
+type ErrorMessage struct {
+	message	string
 }
 
-type Connection struct {
-	Id			string
-	Firstname	string
-	Lastname	string
-	Birthdate	string
-	City		string
-	Mail 		string
-	Tel 		string
+// User management
+
+type UserInfo struct {
+	id			int64
+	userType	int
+	mail		string
+	firstName	string
+	lastName	string
+	birthDate	string
+	city		string
+	phoneNumber	string
 }
 
-type NewPasswd struct {
-	Passwd 	string
+type CoachInfo struct {
+	id			int64
+	mail		string
+	firstName	string
+	lastName	string
+	address		string
+	city		string
+	phoneNumber	string
 }
+
+type NewPassword struct {
+	password	string
+}
+
+// Messages
 
 type Message struct {
 	Id			string

@@ -11,6 +11,7 @@ func dbConn() (db *sql.DB) {
 	dbUser := "root"
 	dbPass := "root"
 	dbName := "upfit"
+
 	db, err := sql.Open(dbDriver, dbUser+":"+dbPass+"@/"+dbName)
 	if err != nil {
 		panic(err.Error())
