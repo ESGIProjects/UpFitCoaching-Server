@@ -62,12 +62,12 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 	user := UserInfo{}
 	user.Id = id
 	user.UserType = userType
-	user.Mail = mail
+	/*user.Mail = mail
 	user.FirstName = firstName
 	user.LastName = lastName
 	user.BirthDate = birthDate
 	user.City = city
-	user.PhoneNumber = phoneNumber
+	user.PhoneNumber = phoneNumber*/
 
 	json, _ := json.Marshal(user)
 
