@@ -1,7 +1,7 @@
 package main
 
 type Id struct {
-	Id	string
+	Id	int64
 }
 
 type Connection struct {
