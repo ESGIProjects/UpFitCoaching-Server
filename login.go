@@ -86,14 +86,21 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 	mail := r.PostFormValue("mail")
 	password := r.PostFormValue("password")
 
-	row := db.QueryRow("SELECT id, type, firstName, lastName, birthDate, city, phoneNumber FROM users WHERE mail = ? AND password = ?", mail, password).Scan(&id, &userType, &firstName, &lastName, &birthDate, &city, &phoneNumber)
+	println("Mail from call: ", mail)
 
+	row := db.QueryRow("SELECT id, type, mail, firstName, lastName, birthDate, city, phoneNumber FROM users WHERE mail = ? AND password = ?", mail, password).Scan(&id, &userType, &mail, &firstName, &lastName, &birthDate, &city, &phoneNumber)
+
+	print("Row value: ", row)
+
+	// If user does not exist
 	if row == sql.ErrNoRows {
+		print("sqlErrNoRows !!!")
+
 		error := ErrorMessage{"user_not_exist"}
 		json, _ := json.Marshal(error)
 
-		w.Write(json)
 		w.WriteHeader(http.StatusNotFound)
+		w.Write(json)
 		return
 	}
 
