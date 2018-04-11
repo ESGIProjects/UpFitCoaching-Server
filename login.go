@@ -89,9 +89,9 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 	isCoach := r.PostFormValue("isCoach")
 
 	if isCoach == "0"{
-		row := db.QueryRow("SELECT id, type, mail, firstName, lastName, birthDate, city, phoneNumber FROM users WHERE mail = ? AND password = ?", mail, password).Scan(&id, &userType, &mail, &firstName, &lastName, &birthDate, &city, &phoneNumber)
+		row = db.QueryRow("SELECT id, type, mail, firstName, lastName, birthDate, city, phoneNumber FROM users WHERE mail = ? AND password = ?", mail, password).Scan(&id, &userType, &mail, &firstName, &lastName, &birthDate, &city, &phoneNumber)
 	} else{
-		row := db.QueryRow("SELECT id, mail, firstName, lastName, address, city, phoneNumber FROM coaches WHERE mail = ? AND password = ?",mail, password).Scan(&id, &mail, &firstName, &lastName, &address, &city, &phoneNumber)
+		row = db.QueryRow("SELECT id, mail, firstName, lastName, address, city, phoneNumber FROM coaches WHERE mail = ? AND password = ?",mail, password).Scan(&id, &mail, &firstName, &lastName, &address, &city, &phoneNumber)
 	}
 
 	// If user does not exist
