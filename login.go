@@ -81,12 +81,18 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 	// Get the selected user
 	var id int64
 	var userType int
-	var firstName, lastName, birthDate, city, phoneNumber string
+	var firstName, lastName, address, birthDate, city, phoneNumber string
+	var row error
 
 	mail := r.PostFormValue("mail")
 	password := r.PostFormValue("password")
+	isCoach := r.PostFormValue("isCoach")
 
-	row := db.QueryRow("SELECT id, type, mail, firstName, lastName, birthDate, city, phoneNumber FROM users WHERE mail = ? AND password = ?", mail, password).Scan(&id, &userType, &mail, &firstName, &lastName, &birthDate, &city, &phoneNumber)
+	if isCoach == "0"{
+		row := db.QueryRow("SELECT id, type, mail, firstName, lastName, birthDate, city, phoneNumber FROM users WHERE mail = ? AND password = ?", mail, password).Scan(&id, &userType, &mail, &firstName, &lastName, &birthDate, &city, &phoneNumber)
+	} else{
+		row := db.QueryRow("SELECT id, mail, firstName, lastName, address, city, phoneNumber FROM coaches WHERE mail = ? AND password = ?",mail, password).Scan(&id, &mail, &firstName, &lastName, &address, &city, &phoneNumber)
+	}
 
 	// If user does not exist
 	if row == sql.ErrNoRows {
