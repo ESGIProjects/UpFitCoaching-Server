@@ -48,15 +48,18 @@ func SendMessage(w http.ResponseWriter, r *http.Request) {
 // Websocket
 
 type Message struct {
-	Email string `json:"email"`
-	Username string `json:"username"`
-	Message string `json:"message"`
+	Message			string	`json:"message"`
+	FromUserId		int		`json:"fromId"`
+	FromUserType	int		`json:"fromType"`
+	ToUserId		int		`json:"toId"`
+	ToUserType		int		`json:"toType"`
+	Date			string	`json:"date"`
 }
 
 type Client struct {
-	Id int
-	UserType int
-	Socket *websocket.Conn
+	Id			int
+	UserType	int
+	Socket		* websocket.Conn
 }
 
 var clients = make(map[Client]bool) // connected clients
@@ -85,8 +88,6 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Printf("NEW CONNECTION OPENED !!")
-
 	id, err := strconv.Atoi(r.URL.Query().Get("id"))
 	userType, err := strconv.Atoi(r.URL.Query().Get("type"))
 
@@ -94,6 +95,8 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 		ws.Close()
 		return
 	}
+
+	log.Printf("New User Entered (id: %d, type: %d)", id, userType)
 
 	defer ws.Close()
 
@@ -112,8 +115,7 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 
 		// Read new message as JSON
 		err := ws.ReadJSON(&msg)
-
-		log.Printf("Message after: %v", msg)
+		log.Printf("Message: %s", msg.Message)
 
 		if err != nil {
 			log.Printf("error: %v", err)
@@ -132,12 +134,16 @@ func handleMessages() {
 
 		for client := range clients {
 
-			err := client.Socket.WriteJSON(msg)
-			if err != nil {
-				log.Printf("error %v", err)
-				client.Socket.Close()
-				delete(clients, client)
+			if msg.ToUserId == client.Id && msg.ToUserType == client.UserType {
+				err := client.Socket.WriteJSON(msg)
+				if err != nil {
+					log.Printf("error %v", err)
+					client.Socket.Close()
+					delete(clients, client)
+				}
 			}
 		}
+
+		// PUSH NOTIFICATION HERE
 	}
 }
