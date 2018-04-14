@@ -1,5 +1,5 @@
-hash: 0b05e1658e367867eb908fd0281aca07af805bf01a7cae84a8cfcdd0962e28d3
-updated: 2018-02-20T20:20:30.62592+01:00
+hash: 29a38d785faa50e9819e13b996589135d0706ba801b4920c407eafa8885731b2
+updated: 2018-04-14T20:35:29.965455+02:00
 imports:
 - name: github.com/go-sql-driver/mysql
   version: a0583e0143b1624142adab07e0e97fe106d99561
@@ -7,4 +7,6 @@ imports:
   version: 08b5f424b9271eedf6f9f0ce86cb9396ed337a42
 - name: github.com/gorilla/mux
   version: 53c1911da2b537f792e7cafcb446b05ffe33b996
+- name: github.com/gorilla/websocket
+  version: eb925808374e5ca90c83401a40d711dc08c0c0f6
 testImports: []

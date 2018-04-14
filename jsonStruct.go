@@ -34,6 +34,7 @@ type NewPassword struct {
 }
 
 // Messages
+/*
 
 type Message struct {
 	Id			string
@@ -41,4 +42,4 @@ type Message struct {
 	IdReceiver	string
 	Body		string
 	Timestamp	string
-}
+} */
