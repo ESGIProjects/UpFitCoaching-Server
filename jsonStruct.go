@@ -10,7 +10,7 @@ type ErrorMessage struct {
 
 type UserInfo struct {
 	Id			int64	`json:"id"`
-	UserType	int		`json:"type"`
+	UserType	int		`json:"type,omitempty"`
 	Mail		string	`json:"mail,omitempty"`
 	FirstName	string	`json:"firstName,omitempty"`
 	LastName	string	`json:"lastName,omitempty"`
