@@ -34,12 +34,12 @@ type NewPassword struct {
 }
 
 // Messages
-/*
 
 type Message struct {
-	Id			string
-	IdSender	string
-	IdReceiver	string
-	Body		string
-	Timestamp	string
-} */
+	FromUserId		int		`json:"fromId"`
+	FromUserType	int		`json:"fromType"`
+	ToUserId		int		`json:"toId"`
+	ToUserType		int		`json:"toType"`
+	Date			string	`json:"date"`
+	Content			string	`json:"content"`
+}

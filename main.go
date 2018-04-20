@@ -14,8 +14,8 @@ func main() {
 	router.HandleFunc("/signin/", SignIn).Methods("POST")
 	router.HandleFunc("/forgot/", Forgot).Methods("POST")
 
-	router.HandleFunc("/messenger/", GetMessages).Methods("GET")
-	router.HandleFunc("/messenger/", SendMessage).Methods("POST")
+	router.HandleFunc("/conversations/", GetConversations).Methods("GET")
+	router.HandleFunc("/conversation/", GetConversation).Methods("GET")
 
 	router.HandleFunc("/ws", handleConnections)
 

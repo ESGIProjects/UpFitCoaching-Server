@@ -9,52 +9,110 @@ import (
 	"errors"
 )
 
-func GetMessages(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	db := dbConn()
-	var id,idSender,idReceiver,body,timestamp string
-	test,_ := r.URL.Query()["id"]
-	rows,_ := db.Query("SELECT id,idSender,idReceiver,body,timestamp FROM Message WHERE (idSender='" + test[0] + "' OR idReceiver ='" +
-		test[0] + "') AND deletedSender='0'")
-	defer rows.Close()
-	Messages := []Message{}
-	for rows.Next(){
-		Message := Message{}
-		rows.Scan(&id,&idSender,&idReceiver,&body,&timestamp)
-		/*Message.Id = id
-		Message.IdSender = idSender
-		Message.IdReceiver = idReceiver
-		Message.Body = body
-		Message.Timestamp = timestamp*/
-		Messages = append(Messages, Message)
-	}
-	json,_ := json.Marshal(Messages)
-	w.Write(json)
-	w.WriteHeader(http.StatusOK)
+func GetConversations(w http.ResponseWriter, r *http.Request) {
+
 }
 
-func SendMessage(w http.ResponseWriter, r *http.Request) {
+func GetConversation(w http.ResponseWriter, r *http.Request) {
+	// Set the response header
 	w.Header().Set("Content-Type", "application/json")
+
+	// Connecting to the database
 	db := dbConn()
-	_, err := db.Query("INSERT INTO Message (idSender,idReceiver,body,timestamp,deletedSender,deletedReceiver) VALUES ('" + r.PostFormValue("idSender") +
-		"','" +r.PostFormValue("idReceiver") + "','" + r.PostFormValue("body") + "','" +r.PostFormValue("timestamp") + "','0','0')")
-	if err == nil{
-		w.WriteHeader(http.StatusCreated)
-	} else {
-		w.WriteHeader(http.StatusBadRequest)
+	defer db.Close()
+
+	// Retrieve fields
+	coachId, err := strconv.Atoi(r.URL.Query().Get("coachId"))
+	if err != nil {
+		error := ErrorMessage{"internal_error"}
+		json, _ := json.Marshal(error)
+
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(json)
+
+		db.Close()
+		return
 	}
+
+	clientId, err := strconv.Atoi(r.URL.Query().Get("clientId"))
+	if err != nil {
+		error := ErrorMessage{"internal_error"}
+		json, _ := json.Marshal(error)
+
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(json)
+
+		db.Close()
+		return
+	}
+
+	var numberByPage = 20
+	var page int
+	pageString := r.URL.Query().Get("page")
+	if pageString == "" {
+		page = 0
+	} else {
+		page, err = strconv.Atoi(pageString)
+		if err != nil {
+			error := ErrorMessage{"internal_error"}
+			json, _ := json.Marshal(error)
+
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write(json)
+
+			db.Close()
+			return
+		}
+	}
+
+	rows, err := db.Query("SELECT * FROM messages WHERE (fromId = ? AND toId = ?) OR (fromId = ? AND toId = ?) ORDER BY date LIMIT ?,?", coachId, clientId, clientId, coachId, page * numberByPage, numberByPage)
+	if err != nil {
+		error := ErrorMessage{"internal_error"}
+		json, _ := json.Marshal(error)
+
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(json)
+
+		db.Close()
+		return
+	}
+
+	defer rows.Close()
+
+	messagesList := []Message{}
+	var id, fromId, fromType, toId, toType int
+	var date, content string
+
+	for rows.Next() {
+		rows.Scan(&id, &fromId, &fromType, &toId, &toType, &date, &content)
+		message := Message{}
+		message.FromUserId = fromId
+		message.FromUserType = fromType
+		message.ToUserId = toId
+		message.ToUserType = toType
+		message.Date = date
+		message.Content = content
+
+		messagesList = append(messagesList, message)
+	}
+
+	// Format the response
+	json, _ := json.Marshal(messagesList)
+
+	// Send the response back
+	w.WriteHeader(http.StatusOK)
+	w.Write(json)
+}
+
+func SaveMessage(message Message) {
+	// Connecting to the database
+	db := dbConn()
+
+	// Insertion
+	db.Exec("INSERT INTO messages (fromId, fromType, toId, toType, date, content) VALUES(?, ?, ?, ?, ?, ?)", message.FromUserId, message.FromUserType, message.ToUserId, message.ToUserType, message.Date, message.Message)
 }
 
 // Websocket
-
-type Message struct {
-	Message			string	`json:"message"`
-	FromUserId		int		`json:"fromId"`
-	FromUserType	int		`json:"fromType"`
-	ToUserId		int		`json:"toId"`
-	ToUserType		int		`json:"toType"`
-	Date			string	`json:"date"`
-}
 
 type Client struct {
 	Id			int
@@ -111,11 +169,11 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 	clients[client] = true
 
 	for {
-		var msg Message
+		var message Message
 
 		// Read new message as JSON
-		err := ws.ReadJSON(&msg)
-		log.Printf("Message: %s", msg.Message)
+		err := ws.ReadJSON(&message)
+		log.Printf("Message: %s", message.Content)
 
 		if err != nil {
 			log.Printf("error: %v", err)
@@ -124,18 +182,21 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Send the new message to broadcast channel
-		broadcast <- msg
+		broadcast <- message
+
+		// Save the message in database
+		SaveMessage(message)
 	}
 }
 
 func handleMessages() {
 	for {
-		msg := <-broadcast
+		message := <-broadcast
 
 		for client := range clients {
 
-			if msg.ToUserId == client.Id && msg.ToUserType == client.UserType {
-				err := client.Socket.WriteJSON(msg)
+			if message.ToUserId == client.Id && message.ToUserType == client.UserType {
+				err := client.Socket.WriteJSON(message)
 				if err != nil {
 					log.Printf("error %v", err)
 					client.Socket.Close()
