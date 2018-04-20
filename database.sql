@@ -20,3 +20,13 @@ CREATE TABLE IF NOT EXISTS coaches (
   city VARCHAR(255),
   phoneNumber VARCHAR(15)
 );
+
+CREATE TABLE IF NOT EXISTS messages (
+  id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  fromId INT NOT NULL,
+  fromType INT NOT NULL,
+  toId INT NOT NULL,
+  toType INT NOT NULL,
+  date DATE,
+  content TEXT
+);
