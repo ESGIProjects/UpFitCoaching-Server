@@ -109,7 +109,7 @@ func SaveMessage(message Message) {
 	db := dbConn()
 
 	// Insertion
-	db.Exec("INSERT INTO messages (fromId, fromType, toId, toType, date, content) VALUES(?, ?, ?, ?, ?, ?)", message.FromUserId, message.FromUserType, message.ToUserId, message.ToUserType, message.Date, message.Message)
+	db.Exec("INSERT INTO messages (fromId, fromType, toId, toType, date, content) VALUES(?, ?, ?, ?, ?, ?)", message.FromUserId, message.FromUserType, message.ToUserId, message.ToUserType, message.Date, message.Content)
 }
 
 // Websocket
