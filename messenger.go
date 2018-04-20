@@ -104,12 +104,17 @@ func GetConversation(w http.ResponseWriter, r *http.Request) {
 	w.Write(json)
 }
 
-func SaveMessage(message Message) {
+func SaveMessage(message Message) (int64, error) {
 	// Connecting to the database
 	db := dbConn()
 
 	// Insertion
-	db.Exec("INSERT INTO messages (fromId, fromType, toId, toType, date, content) VALUES(?, ?, ?, ?, ?, ?)", message.FromUserId, message.FromUserType, message.ToUserId, message.ToUserType, message.Date, message.Content)
+	res, err := db.Exec("INSERT INTO messages (fromId, fromType, toId, toType, date, content) VALUES(?, ?, ?, ?, ?, ?)", message.FromUserId, message.FromUserType, message.ToUserId, message.ToUserType, message.Date, message.Content)
+	if err != nil {
+		return 0, err
+	}
+
+	return res.LastInsertId()
 }
 
 // Websocket
@@ -181,11 +186,17 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 
+		// Save the message in database
+		id, err := SaveMessage(message)
+		if err != nil {
+			log.Printf("error: %v", err)
+			break
+		}
+
+		message.Id = id
+
 		// Send the new message to broadcast channel
 		broadcast <- message
-
-		// Save the message in database
-		SaveMessage(message)
 	}
 }
 

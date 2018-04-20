@@ -36,6 +36,7 @@ type NewPassword struct {
 // Messages
 
 type Message struct {
+	Id				int64	`json:"id,omitempty"`
 	FromUserId		int		`json:"fromId"`
 	FromUserType	int		`json:"fromType"`
 	ToUserId		int		`json:"toId"`
