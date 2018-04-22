@@ -65,7 +65,7 @@ func GetConversation(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	rows, err := db.Query("SELECT * FROM messages WHERE (fromId = ? AND toId = ?) OR (fromId = ? AND toId = ?) ORDER BY date LIMIT ?,?", coachId, clientId, clientId, coachId, page * numberByPage, numberByPage)
+	rows, err := db.Query("SELECT * FROM messages WHERE (fromId = ? AND toId = ?) OR (fromId = ? AND toId = ?) ORDER BY date DESC LIMIT ?,?", coachId, clientId, clientId, coachId, page * numberByPage, numberByPage)
 	if err != nil {
 		error := ErrorMessage{"internal_error"}
 		json, _ := json.Marshal(error)
