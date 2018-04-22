@@ -80,12 +80,14 @@ func GetConversation(w http.ResponseWriter, r *http.Request) {
 	defer rows.Close()
 
 	messagesList := []Message{}
-	var id, fromId, fromType, toId, toType int
+	var id int64
+	var fromId, fromType, toId, toType int
 	var date, content string
 
 	for rows.Next() {
 		rows.Scan(&id, &fromId, &fromType, &toId, &toType, &date, &content)
 		message := Message{}
+		message.Id = id
 		message.FromUserId = fromId
 		message.FromUserType = fromType
 		message.ToUserId = toId
