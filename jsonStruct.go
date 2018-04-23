@@ -17,7 +17,7 @@ type UserInfo struct {
 	City		string	`json:"city,omitempty"`
 	PhoneNumber	string	`json:"phoneNumber,omitempty"`
 	Address		string	`json:"address,omitempty"`
-	BirthDate	int64	`json:"birthDate,omitempty"`
+	BirthDate	string	`json:"birthDate,omitempty"`
 }
 
 type NewPassword struct {
