@@ -83,8 +83,9 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 	user.Mail = r.PostFormValue("mail")
 	password := r.PostFormValue("password")
 	var dbPassword string
+	var nullableBirthDate, nullableAddress sql.NullString
 
-	row := db.QueryRow("SELECT * FROM users NATURAL LEFT JOIN coaches NATURAL LEFT JOIN clients WHERE mail = ?", user.Mail).Scan(&user.Id, &user.Type, &user.Mail, &dbPassword, &user.FirstName, &user.LastName, &user.City, &user.PhoneNumber, &user.Address, &user.BirthDate)
+	row := db.QueryRow("SELECT * FROM users NATURAL LEFT JOIN coaches NATURAL LEFT JOIN clients WHERE mail = ?", user.Mail).Scan(&user.Id, &user.Type, &user.Mail, &dbPassword, &user.FirstName, &user.LastName, &user.City, &user.PhoneNumber, &nullableAddress, &nullableBirthDate)
 
 	// If user does not exist
 	if row == sql.ErrNoRows {
@@ -102,6 +103,10 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 		w.Write(json)
 		return
 	}
+
+	// Adds optional value
+	user.Address = nullableAddress.String
+	user.BirthDate = nullableBirthDate.String
 
 	// Format the response
 	json, _ := json.Marshal(user)
