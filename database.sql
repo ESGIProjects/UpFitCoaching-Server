@@ -5,28 +5,31 @@ CREATE TABLE IF NOT EXISTS users (
   password VARCHAR(255) NOT NULL,
   firstName VARCHAR(100) NOT NULL,
   lastName VARCHAR(100) NOT NULL,
-  birthDate DATE,
   city VARCHAR(255),
   phoneNumber VARCHAR(15)
 );
 
 CREATE TABLE IF NOT EXISTS coaches (
   id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  mail VARCHAR(255) NOT NULL,
-  password VARCHAR(255) NOT NULL,
-  firstName VARCHAR(100) NOT NULL,
-  lastName VARCHAR(100) NOT NULL,
-  address VARCHAR(255),
-  city VARCHAR(255),
-  phoneNumber VARCHAR(15)
+  address VARCHAR(255) NOT NULL,
+
+  FOREIGN KEY (id) REFERENCES users(id)
+);
+
+CREATE TABLE IF NOT EXISTS clients (
+  id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  birthDate TIMESTAMP NOT NULL,
+
+  FOREIGN KEY (id) REFERENCES users(id)
 );
 
 CREATE TABLE IF NOT EXISTS messages (
   id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  fromId INT NOT NULL,
-  fromType INT NOT NULL,
-  toId INT NOT NULL,
-  toType INT NOT NULL,
-  date DATE,
-  content TEXT
+  sender INT NOT NULL,
+  receiver INT NOT NULL,
+  date TIMESTAMP NOT NULL,
+  content TEXT NOT NULL,
+
+  FOREIGN KEY (sender) REFERENCES users(id),
+  FOREIGN KEY (receiver) REFERENCES users(id)
 );
