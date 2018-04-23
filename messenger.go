@@ -9,11 +9,7 @@ import (
 	"errors"
 )
 
-func GetConversations(w http.ResponseWriter, r *http.Request) {
-
-}
-
-func GetConversation(w http.ResponseWriter, r *http.Request) {
+func GetMessages(w http.ResponseWriter, r *http.Request) {
 	// Set the response header
 	w.Header().Set("Content-Type", "application/json")
 
@@ -21,8 +17,8 @@ func GetConversation(w http.ResponseWriter, r *http.Request) {
 	db := dbConn()
 	defer db.Close()
 
-	// Retrieve fields
-	coachId, err := strconv.Atoi(r.URL.Query().Get("coachId"))
+	// Retrieve field
+	userId, err := strconv.Atoi(r.URL.Query().Get("userId"))
 	if err != nil {
 		error := ErrorMessage{"internal_error"}
 		json, _ := json.Marshal(error)
@@ -34,38 +30,7 @@ func GetConversation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	clientId, err := strconv.Atoi(r.URL.Query().Get("clientId"))
-	if err != nil {
-		error := ErrorMessage{"internal_error"}
-		json, _ := json.Marshal(error)
-
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write(json)
-
-		db.Close()
-		return
-	}
-
-	var numberByPage = 20
-	var page int
-	pageString := r.URL.Query().Get("page")
-	if pageString == "" {
-		page = 0
-	} else {
-		page, err = strconv.Atoi(pageString)
-		if err != nil {
-			error := ErrorMessage{"internal_error"}
-			json, _ := json.Marshal(error)
-
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write(json)
-
-			db.Close()
-			return
-		}
-	}
-
-	rows, err := db.Query("SELECT * FROM messages WHERE (fromId = ? AND toId = ?) OR (fromId = ? AND toId = ?) ORDER BY date DESC LIMIT ?,?", coachId, clientId, clientId, coachId, page * numberByPage, numberByPage)
+	rows, err := db.Query("SELECT * FROM messages WHERE sender = ? OR receiver = ? ORDER BY date DESC", userId, userId)
 	if err != nil {
 		error := ErrorMessage{"internal_error"}
 		json, _ := json.Marshal(error)
@@ -80,18 +45,15 @@ func GetConversation(w http.ResponseWriter, r *http.Request) {
 	defer rows.Close()
 
 	messagesList := []Message{}
-	var id int64
-	var fromId, fromType, toId, toType int
+	var id, sender, receiver int64
 	var date, content string
 
 	for rows.Next() {
-		rows.Scan(&id, &fromId, &fromType, &toId, &toType, &date, &content)
+		rows.Scan(&id, &sender, &receiver, &date, &content)
 		message := Message{}
 		message.Id = id
-		message.FromUserId = fromId
-		message.FromUserType = fromType
-		message.ToUserId = toId
-		message.ToUserType = toType
+		message.Sender = sender
+		message.Receiver = receiver
 		message.Date = date
 		message.Content = content
 
@@ -111,7 +73,7 @@ func SaveMessage(message Message) (int64, error) {
 	db := dbConn()
 
 	// Insertion
-	res, err := db.Exec("INSERT INTO messages (fromId, fromType, toId, toType, date, content) VALUES(?, ?, ?, ?, ?, ?)", message.FromUserId, message.FromUserType, message.ToUserId, message.ToUserType, message.Date, message.Content)
+	res, err := db.Exec("INSERT INTO messages (sender, receiver, date, content) VALUES(?, ?, ?, ?)", message.Sender, message.Receiver, message.Date, message.Content)
 	if err != nil {
 		return 0, err
 	}
@@ -122,8 +84,7 @@ func SaveMessage(message Message) (int64, error) {
 // Websocket
 
 type Client struct {
-	Id			int
-	UserType	int
+	Id			int64
 	Socket		* websocket.Conn
 }
 
@@ -135,9 +96,9 @@ var upgrader = websocket.Upgrader{
 		return true
 }}
 
-func getClient(id int, userType int) (Client, error) {
+func getClient(id int64) (Client, error) {
 	for client := range clients {
-		if client.Id == id && client.UserType == userType {
+		if client.Id == id {
 			return client, nil
 		}
 	}
@@ -153,23 +114,21 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := strconv.Atoi(r.URL.Query().Get("id"))
-	userType, err := strconv.Atoi(r.URL.Query().Get("type"))
-
+	clientId, err := strconv.Atoi(r.URL.Query().Get("id"))
 	if err != nil {
 		ws.Close()
 		return
 	}
+	id := int64(clientId)
 
-	log.Printf("New User Entered (id: %d, type: %d)", id, userType)
+	log.Printf("New User Entered (id: %d)", id)
 
 	defer ws.Close()
 
 	// register new client
-	client, err := getClient(id, userType)
+	client, err := getClient(id)
 	if err != nil {
 		client.Id = id
-		client.UserType = userType
 		client.Socket = ws
 	}
 
@@ -208,7 +167,8 @@ func handleMessages() {
 
 		for client := range clients {
 
-			if message.ToUserId == client.Id && message.ToUserType == client.UserType {
+			if message.Receiver == client.Id {
+				log.Printf("found correct client")
 				err := client.Socket.WriteJSON(message)
 				if err != nil {
 					log.Printf("error %v", err)

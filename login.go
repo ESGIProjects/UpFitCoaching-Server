@@ -61,7 +61,7 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 	// Format the response
 	user := UserInfo{}
 	user.Id = id
-	user.UserType = userType
+	user.Type = userType
 
 	json, _ := json.Marshal(user)
 
@@ -79,40 +79,31 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 	db := dbConn()
 
 	// Get the selected user
-	var id int64
-	var userType int
-	var firstName, lastName, address, birthDate, city, phoneNumber string
-	var UserRow, CoachRow error
-
-	mail := r.PostFormValue("mail")
+	user := UserInfo{}
+	user.Mail = r.PostFormValue("mail")
 	password := r.PostFormValue("password")
+	var dbPassword string
 
-	UserRow = db.QueryRow("SELECT id, type, mail, firstName, lastName, birthDate, city, phoneNumber FROM users WHERE mail = ? AND password = ?", mail, password).Scan(&id, &userType, &mail, &firstName, &lastName, &birthDate, &city, &phoneNumber)
+	row := db.QueryRow("SELECT * FROM users NATURAL LEFT JOIN coaches NATURAL LEFT JOIN clients WHERE mail = ?", user.Mail).Scan(&user.Id, &user.Type, &user.Mail, &dbPassword, &user.FirstName, &user.LastName, &user.City, &user.PhoneNumber, &user.Address, &user.BirthDate)
 
-	// If user does not exist, another request is made on coaches table
-	if UserRow == sql.ErrNoRows {
-		CoachRow = db.QueryRow("SELECT id, mail, firstName, lastName, address, city, phoneNumber FROM coaches WHERE mail = ? AND password = ?", mail, password).Scan(&id, &mail, &firstName, &lastName, &address, &city, &phoneNumber)
-		// If coach does not exist
-		if CoachRow == sql.ErrNoRows {
-			error := ErrorMessage{"user_not_exist"}
-			json, _ := json.Marshal(error)
-			w.WriteHeader(http.StatusNotFound)
-			w.Write(json)
-			return
-		}
+	// If user does not exist
+	if row == sql.ErrNoRows {
+		error := ErrorMessage{"user_not_exist"}
+		json, _ := json.Marshal(error)
+		w.WriteHeader(http.StatusNotFound)
+		w.Write(json)
+		return
+	}
+
+	if password != dbPassword {
+		error := ErrorMessage{"user_wrong_password"}
+		json, _ := json.Marshal(error)
+		w.WriteHeader(http.StatusNotFound)
+		w.Write(json)
+		return
 	}
 
 	// Format the response
-	user := UserInfo{}
-	user.Id = id
-	user.UserType = userType
-	user.Mail = mail
-	user.FirstName = firstName
-	user.LastName = lastName
-	user.BirthDate = birthDate
-	user.City = city
-	user.PhoneNumber = phoneNumber
-
 	json, _ := json.Marshal(user)
 
 	// Send the response back

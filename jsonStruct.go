@@ -10,23 +10,14 @@ type ErrorMessage struct {
 
 type UserInfo struct {
 	Id			int64	`json:"id"`
-	UserType	int		`json:"type,omitempty"`
+	Type		int		`json:"type"`
 	Mail		string	`json:"mail,omitempty"`
 	FirstName	string	`json:"firstName,omitempty"`
 	LastName	string	`json:"lastName,omitempty"`
-	BirthDate	string	`json:"birthDate,omitempty"`
 	City		string	`json:"city,omitempty"`
 	PhoneNumber	string	`json:"phoneNumber,omitempty"`
-}
-
-type CoachInfo struct {
-	Id			int64
-	Mail		string
-	FirstName	string
-	LastName	string
-	Address		string
-	City		string
-	PhoneNumber	string
+	Address		string	`json:"address,omitempty"`
+	BirthDate	int64	`json:"birthDate,omitempty"`
 }
 
 type NewPassword struct {
@@ -37,10 +28,8 @@ type NewPassword struct {
 
 type Message struct {
 	Id				int64	`json:"id,omitempty"`
-	FromUserId		int		`json:"fromId"`
-	FromUserType	int		`json:"fromType"`
-	ToUserId		int		`json:"toId"`
-	ToUserType		int		`json:"toType"`
+	Sender			int64	`json:"sender"`
+	Receiver		int64	`json:"receiver"`
 	Date			string	`json:"date"`
 	Content			string	`json:"content"`
 }
