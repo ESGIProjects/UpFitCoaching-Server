@@ -27,9 +27,9 @@ type NewPassword struct {
 // Messages
 
 type Message struct {
-	Id				int64	`json:"id,omitempty"`
-	Sender			int64	`json:"sender"`
-	Receiver		int64	`json:"receiver"`
-	Date			string	`json:"date"`
-	Content			string	`json:"content"`
+	Id				int64		`json:"id,omitempty"`
+	Sender			UserInfo	`json:"sender"`
+	Receiver		UserInfo	`json:"receiver"`
+	Date			string		`json:"date"`
+	Content			string		`json:"content"`
 }

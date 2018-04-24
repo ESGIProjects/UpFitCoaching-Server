@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"github.com/gorilla/websocket"
 	"errors"
+	"database/sql"
 )
 
 func GetMessages(w http.ResponseWriter, r *http.Request) {
@@ -30,7 +31,33 @@ func GetMessages(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rows, err := db.Query("SELECT * FROM messages WHERE sender = ? OR receiver = ? ORDER BY date DESC", userId, userId)
+	// Retrieve every concerned users
+	rows, err := db.Query("(SELECT id, type, mail, firstName, lastName, city, phoneNumber, address, birthDate FROM users NATURAL LEFT JOIN coaches NATURAL LEFT JOIN clients WHERE id = ?) UNION (SELECT id, type, mail, firstName, lastName, city, phoneNumber, address, birthDate FROM USERS NATURAL RIGHT JOIN (SELECT sender AS id FROM messages WHERE receiver = ? UNION SELECT receiver AS id FROM messages WHERE sender = ?) AS u NATURAL LEFT JOIN coaches NATURAL LEFT JOIN clients)", userId, userId, userId)
+	if err != nil {
+		error := ErrorMessage{"internal_error"}
+		json, _ := json.Marshal(error)
+
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(json)
+
+		db.Close()
+		return
+	}
+
+	usersMap := make(map[int64]UserInfo)
+
+	for rows.Next() {
+		user := UserInfo{}
+		var nullableAddress, nullableBirthDate sql.NullString
+		rows.Scan(&user.Id, &user.Type, &user.Mail, &user.FirstName, &user.LastName, &user.City, &user.PhoneNumber, &nullableAddress, &nullableBirthDate)
+		user.Address = nullableAddress.String
+		user.BirthDate = nullableBirthDate.String
+
+		usersMap[user.Id] = user
+	}
+
+	// Retrieve every messages
+	rows, err = db.Query("SELECT * FROM messages WHERE sender = ? OR receiver = ? ORDER BY date DESC", userId, userId)
 	if err != nil {
 		error := ErrorMessage{"internal_error"}
 		json, _ := json.Marshal(error)
@@ -45,17 +72,13 @@ func GetMessages(w http.ResponseWriter, r *http.Request) {
 	defer rows.Close()
 
 	messagesList := []Message{}
-	var id, sender, receiver int64
-	var date, content string
 
 	for rows.Next() {
-		rows.Scan(&id, &sender, &receiver, &date, &content)
 		message := Message{}
-		message.Id = id
-		message.Sender = sender
-		message.Receiver = receiver
-		message.Date = date
-		message.Content = content
+		var sender, receiver int64
+		rows.Scan(&message.Id, &sender, &receiver, &message.Date, &message.Content)
+		message.Sender = usersMap[sender]
+		message.Receiver = usersMap[receiver]
 
 		messagesList = append(messagesList, message)
 	}
@@ -73,7 +96,7 @@ func SaveMessage(message Message) (int64, error) {
 	db := dbConn()
 
 	// Insertion
-	res, err := db.Exec("INSERT INTO messages (sender, receiver, date, content) VALUES(?, ?, ?, ?)", message.Sender, message.Receiver, message.Date, message.Content)
+	res, err := db.Exec("INSERT INTO messages (sender, receiver, date, content) VALUES(?, ?, ?, ?)", message.Sender.Id, message.Receiver.Id, message.Date, message.Content)
 	if err != nil {
 		return 0, err
 	}
@@ -167,7 +190,7 @@ func handleMessages() {
 
 		for client := range clients {
 
-			if message.Receiver == client.Id {
+			if message.Receiver.Id == client.Id {
 				log.Printf("found correct client")
 				err := client.Socket.WriteJSON(message)
 				if err != nil {
