@@ -32,7 +32,7 @@ func GetMessages(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Retrieve every concerned users
-	rows, err := db.Query("(SELECT id, type, mail, firstName, lastName, city, phoneNumber, address, birthDate FROM users NATURAL LEFT JOIN coaches NATURAL LEFT JOIN clients WHERE id = ?) UNION (SELECT id, type, mail, firstName, lastName, city, phoneNumber, address, birthDate FROM USERS NATURAL RIGHT JOIN (SELECT sender AS id FROM messages WHERE receiver = ? UNION SELECT receiver AS id FROM messages WHERE sender = ?) AS u NATURAL LEFT JOIN coaches NATURAL LEFT JOIN clients)", userId, userId, userId)
+	rows, err := db.Query("(SELECT id, type, mail, firstName, lastName, city, phoneNumber, address, birthDate FROM users NATURAL LEFT JOIN coaches NATURAL LEFT JOIN clients WHERE id = ?) UNION (SELECT id, type, mail, firstName, lastName, city, phoneNumber, address, birthDate FROM users NATURAL RIGHT JOIN (SELECT sender AS id FROM messages WHERE receiver = ? UNION SELECT receiver AS id FROM messages WHERE sender = ?) AS u NATURAL LEFT JOIN coaches NATURAL LEFT JOIN clients)", userId, userId, userId)
 	if err != nil {
 		error := ErrorMessage{"internal_error"}
 		json, _ := json.Marshal(error)
