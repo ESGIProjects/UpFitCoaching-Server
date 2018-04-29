@@ -32,12 +32,15 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 	password := r.PostFormValue("password")
 	firstName := r.PostFormValue("firstName")
 	lastName := r.PostFormValue("lastName")
-	birthDate := r.PostFormValue("birthDate")
 	city := r.PostFormValue("city")
 	phoneNumber := r.PostFormValue("phoneNumber")
 
+	// Potentially optional fields
+	birthDate := r.PostFormValue("birthDate")
+	address := r.PostFormValue("address")
+
 	// Insertion
-	res, err := db.Exec("INSERT INTO users (type, mail, password, firstName, lastName, birthDate, city, phoneNumber) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", userType, mail, password, firstName, lastName, birthDate, city, phoneNumber)
+	res, err := db.Exec("INSERT INTO users (type, mail, password, firstName, lastName, city, phoneNumber) VALUES (?, ?, ?, ?, ?, ?, ?)", userType, mail, password, firstName, lastName, city, phoneNumber)
 	if err != nil {
 		error := ErrorMessage{"user_insert_failed"}
 		json, _ := json.Marshal(error)
@@ -56,6 +59,29 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write(json)
 		return
+	}
+
+	// second insert
+	if userType == 2 {
+		_, err := db.Exec("INSERT INTO coaches (id, address) VALUES(?, ?)", id, address)
+		if err != nil {
+			error := ErrorMessage{"user_insert_failed"}
+			json, _ := json.Marshal(error)
+
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write(json)
+			return
+		}
+	} else {
+		_, err := db.Exec("INSERT INTO clients (id, birthDate) VALUES(?, ?)", id, birthDate)
+		if err != nil {
+			error := ErrorMessage{"user_insert_failed"}
+			json, _ := json.Marshal(error)
+
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write(json)
+			return
+		}
 	}
 
 	// Format the response
