@@ -55,13 +55,32 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 	password := r.PostFormValue("password")
 	firstName := r.PostFormValue("firstName")
 	lastName := r.PostFormValue("lastName")
-	birthDate := r.PostFormValue("birthDate")
 	city := r.PostFormValue("city")
 	phoneNumber := r.PostFormValue("phoneNumber")
 
-	// Insertion
-	res, err := db.Exec("INSERT INTO users (type, mail, password, firstName, lastName, birthDate, city, phoneNumber) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", userType, mail, password, firstName, lastName, birthDate, city, phoneNumber)
+	// Potentially nil fields
+	birthDate := r.PostFormValue("birthDate")
+	address := r.PostFormValue("address")
+
+	// Start transaction
+	tx, err := db.Begin()
 	if err != nil {
+		db.Close()
+
+		error := ErrorMessage{"internal_error"}
+		json, _ := json.Marshal(error)
+
+		w.WriteHeader(http.StatusNotModified)
+		w.Write(json)
+		return
+	}
+
+	// User insertion
+	res, err := tx.Exec("INSERT INTO users (type, mail, password, firstName, lastName, city, phoneNumber) VALUES (?, ?, ?, ?, ?, ?, ?)", userType, mail, password, firstName, lastName, city, phoneNumber)
+	if err != nil {
+		tx.Rollback()
+		db.Close()
+
 		error := ErrorMessage{"user_insert_failed"}
 		json, _ := json.Marshal(error)
 
@@ -73,6 +92,9 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 	// Get the new user ID
 	id, err := res.LastInsertId()
 	if err != nil {
+		tx.Rollback()
+		db.Close()
+
 		error := ErrorMessage{"internal_error"}
 		json, _ := json.Marshal(error)
 
@@ -81,10 +103,42 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Insert information depending on user type
+	if userType == 2 {
+		_, err = tx.Exec("INSERT INTO coaches (id, address) VALUES(?, ?)", id, address)
+	} else {
+		_, err = tx.Exec("INSERT INTO clients (id, birthDate) VALUES(?, ?)", id, birthDate)
+	}
+
+	if err != nil {
+		tx.Rollback()
+		db.Close()
+
+		error := ErrorMessage{"user_insert_failed"}
+		json, _ := json.Marshal(error)
+
+		w.WriteHeader(http.StatusNotModified)
+		w.Write(json)
+		return
+	}
+
+	// Commit to DB
+	if tx.Commit() != nil {
+		db.Close()
+
+		error := ErrorMessage{"user_insert_failed"}
+		json, _ := json.Marshal(error)
+
+		w.WriteHeader(http.StatusNotModified)
+		w.Write(json)
+		return
+	}
+
+	db.Close()
+
 	// Format the response
 	user := UserInfo{}
 	user.Id = id
-	user.Type = userType
 
 	json, _ := json.Marshal(user)
 
