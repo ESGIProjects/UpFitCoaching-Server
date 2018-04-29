@@ -1,15 +1,17 @@
 package main
 
 import (
-    "log"
-    "net/http"
-    _ "github.com/go-sql-driver/mysql"
+	"log"
+	"net/http"
+
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
 )
 
 func main() {
 	router := mux.NewRouter()
 
+	router.HandleFunc("/checkmail/", CheckMail).Methods("POST")
 	router.HandleFunc("/signup/", SignUp).Methods("POST")
 	router.HandleFunc("/signin/", SignIn).Methods("POST")
 	router.HandleFunc("/forgot/", Forgot).Methods("POST")

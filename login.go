@@ -7,6 +7,29 @@ import (
 	"strconv"
 )
 
+func CheckMail(w http.ResponseWriter, r *http.Request) {
+	// Set the response header
+	w.Header().Set("Content-Type", "application/json")
+
+	// Connecting to the database
+	db := dbConn()
+
+	// Check if the user already exists
+	mail := r.PostFormValue("mail")
+	row := db.QueryRow("SELECT id FROM users WHERE mail = ?", mail).Scan()
+
+	if row != sql.ErrNoRows {
+		error := ErrorMessage{"user_already_exists"}
+		json, _ := json.Marshal(error)
+
+		w.WriteHeader(http.StatusConflict)
+		w.Write(json)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
+
 func SignUp(w http.ResponseWriter, r *http.Request) {
 	// Set the response header
 	w.Header().Set("Content-Type", "application/json")
