@@ -3,3 +3,4 @@ vendor/*
 
 # Don't push the binary
 server
+server.exe
