@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
+	"errors"
 )
 
 func CheckMail(w http.ResponseWriter, r *http.Request) {
@@ -159,13 +160,9 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 	user := UserInfo{}
 	user.Mail = r.PostFormValue("mail")
 	password := r.PostFormValue("password")
-	var dbPassword string
-	var nullableBirthDate, nullableAddress sql.NullString
 
-	row := db.QueryRow("SELECT * FROM users NATURAL LEFT JOIN coaches NATURAL LEFT JOIN clients WHERE mail = ?", user.Mail).Scan(&user.Id, &user.Type, &user.Mail, &dbPassword, &user.FirstName, &user.LastName, &user.City, &user.PhoneNumber, &nullableAddress, &nullableBirthDate)
-
-	// If user does not exist
-	if row == sql.ErrNoRows {
+	dbPassword, err := GetUserFromMail(db, &user, user.Mail)
+	if err != nil {
 		error := ErrorMessage{"user_not_exist"}
 		json, _ := json.Marshal(error)
 		w.WriteHeader(http.StatusNotFound)
@@ -180,10 +177,6 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 		w.Write(json)
 		return
 	}
-
-	// Adds optional value
-	user.Address = nullableAddress.String
-	user.BirthDate = nullableBirthDate.String
 
 	// Format the response
 	json, _ := json.Marshal(user)
@@ -220,4 +213,48 @@ func Forgot(w http.ResponseWriter, r *http.Request) {
 	// Send the response back
 	w.WriteHeader(http.StatusOK)
 	w.Write(json)
+}
+
+func GetUserFromMail(db *sql.DB, user *UserInfo, mail string) (string, error) {
+	sqlQuery := "SELECT * FROM users NATURAL LEFT JOIN coaches NATURAL LEFT JOIN clients WHERE mail = ?"
+	row := db.QueryRow(sqlQuery, mail)
+
+	return GetUser(db, row, user)
+}
+
+func GetUserFromId(db *sql.DB, user *UserInfo, id int64) (string, error) {
+	sqlQuery := "SELECT * FROM users NATURAL LEFT JOIN coaches NATURAL LEFT JOIN clients WHERE id = ?"
+	row := db.QueryRow(sqlQuery, id)
+
+	return GetUser(db, row, user)
+}
+
+func GetUser(db *sql.DB, queryRow *sql.Row, user *UserInfo) (string, error) {
+	var dbPassword string
+	var nullableBirthDate, nullableAddress sql.NullString
+	var nullableCoachId sql.NullInt64
+
+	row := queryRow.Scan(&user.Id, &user.Type, &user.Mail, &dbPassword, &user.FirstName, &user.LastName, &user.City, &user.PhoneNumber, &nullableAddress, &nullableBirthDate, &nullableCoachId)
+
+	// If user does not exit
+	if row == sql.ErrNoRows {
+		return "", errors.New("no_user")
+	}
+
+	// Adds optional value
+	user.Address = nullableAddress.String
+	user.BirthDate = nullableBirthDate.String
+
+	if nullableCoachId.Valid {
+		coach := UserInfo{}
+		_, err := GetUserFromId(db, &coach, nullableCoachId.Int64)
+
+		println(coach.Id)
+
+		if err == nil {
+			user.Coach = &coach
+		}
+	}
+
+	return dbPassword, nil
 }

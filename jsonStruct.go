@@ -9,15 +9,16 @@ type ErrorMessage struct {
 // User management
 
 type UserInfo struct {
-	Id			int64	`json:"id"`
-	Type		*int	`json:"type,omitempty"`
-	Mail		string	`json:"mail,omitempty"`
-	FirstName	string	`json:"firstName,omitempty"`
-	LastName	string	`json:"lastName,omitempty"`
-	City		string	`json:"city,omitempty"`
-	PhoneNumber	string	`json:"phoneNumber,omitempty"`
-	Address		string	`json:"address,omitempty"`
-	BirthDate	string	`json:"birthDate,omitempty"`
+	Id			int64		`json:"id"`
+	Type		*int		`json:"type,omitempty"`
+	Mail		string		`json:"mail,omitempty"`
+	FirstName	string		`json:"firstName,omitempty"`
+	LastName	string		`json:"lastName,omitempty"`
+	City		string		`json:"city,omitempty"`
+	PhoneNumber	string		`json:"phoneNumber,omitempty"`
+	Address		string		`json:"address,omitempty"`
+	BirthDate	string		`json:"birthDate,omitempty"`
+	Coach		*UserInfo	`json:"coach,omitempty"`
 }
 
 type NewPassword struct {
