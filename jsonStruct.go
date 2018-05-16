@@ -34,3 +34,18 @@ type Message struct {
 	Date			string		`json:"date"`
 	Content			string		`json:"content"`
 }
+
+// Events
+
+type Event struct {
+	Id			int64		`json:"id,omitempty"`
+	Name		string		`json:"name"`
+	Client		UserInfo	`json:"client"`
+	Coach		UserInfo	`json:"coach"`
+	Start		string		`json:"start"`
+	End			string		`json:"end"`
+	Created		string		`json:"created"`
+	CreatedBy	UserInfo	`json:"createdBy"`
+	Updated		string		`json:"updated"`
+	UpdatedBy	UserInfo	`json:"updatedBy"`
+}

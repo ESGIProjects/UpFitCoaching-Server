@@ -18,6 +18,9 @@ func main() {
 
 	router.HandleFunc("/messages/", GetMessages).Methods("GET")
 
+	router.HandleFunc("/events/", GetEvents).Methods("GET")
+	router.HandleFunc("/events/", AddEvent).Methods("POST")
+
 	router.HandleFunc("/ws", handleConnections)
 
 	go handleMessages()
