@@ -8,64 +8,54 @@ import (
 	"github.com/gorilla/websocket"
 	"errors"
 	"database/sql"
+	"server/user"
+	"server/global"
 )
 
 func GetMessages(w http.ResponseWriter, r *http.Request) {
-	// Set the response header
 	w.Header().Set("Content-Type", "application/json")
-
-	// Connecting to the database
-	db := dbConn()
+	db := global.OpenDB()
 	defer db.Close()
 
 	// Retrieve field
 	userId, err := strconv.Atoi(r.URL.Query().Get("userId"))
 	if err != nil {
-		error := ErrorMessage{"internal_error"}
-		json, _ := json.Marshal(error)
-
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write(json)
-
 		db.Close()
+
+		println(err.Error())
+		global.SendError(w, "internal_error", http.StatusNotModified)
 		return
 	}
 
 	// Retrieve every concerned users
 	rows, err := db.Query("(SELECT id, type, mail, firstName, lastName, city, phoneNumber, address, birthDate FROM users NATURAL LEFT JOIN coaches NATURAL LEFT JOIN clients WHERE id = ?) UNION (SELECT id, type, mail, firstName, lastName, city, phoneNumber, address, birthDate FROM users NATURAL RIGHT JOIN (SELECT sender AS id FROM messages WHERE receiver = ? UNION SELECT receiver AS id FROM messages WHERE sender = ?) AS u NATURAL LEFT JOIN coaches NATURAL LEFT JOIN clients)", userId, userId, userId)
 	if err != nil {
-		error := ErrorMessage{"internal_error"}
-		json, _ := json.Marshal(error)
-
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write(json)
-
 		db.Close()
+
+		println(err.Error())
+		global.SendError(w, "internal_error", http.StatusNotModified)
 		return
 	}
 
-	usersMap := make(map[int64]UserInfo)
+	usersMap := make(map[int64]user.Info)
 
 	for rows.Next() {
-		user := UserInfo{}
-		var nullableAddress, nullableBirthDate sql.NullString
-		rows.Scan(&user.Id, &user.Type, &user.Mail, &user.FirstName, &user.LastName, &user.City, &user.PhoneNumber, &nullableAddress, &nullableBirthDate)
-		user.Address = nullableAddress.String
-		user.BirthDate = nullableBirthDate.String
+		userInfo := user.Info{}
+		var address, birthDate sql.NullString
+		rows.Scan(&userInfo.Id, &userInfo.Type, &userInfo.Mail, &userInfo.FirstName, &userInfo.LastName, &userInfo.City, &userInfo.PhoneNumber, &address, &birthDate)
+		userInfo.Address = address.String
+		userInfo.BirthDate = birthDate.String
 
-		usersMap[user.Id] = user
+		usersMap[userInfo.Id] = userInfo
 	}
 
 	// Retrieve every messages
 	rows, err = db.Query("SELECT * FROM messages WHERE sender = ? OR receiver = ? ORDER BY date DESC", userId, userId)
 	if err != nil {
-		error := ErrorMessage{"internal_error"}
-		json, _ := json.Marshal(error)
-
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write(json)
-
 		db.Close()
+
+		println(err.Error())
+		global.SendError(w, "internal_error", http.StatusNotModified)
 		return
 	}
 
@@ -92,8 +82,7 @@ func GetMessages(w http.ResponseWriter, r *http.Request) {
 }
 
 func SaveMessage(message Message) (int64, error) {
-	// Connecting to the database
-	db := dbConn()
+	db := global.OpenDB()
 
 	// Insertion
 	res, err := db.Exec("INSERT INTO messages (sender, receiver, date, content) VALUES(?, ?, ?, ?)", message.Sender.Id, message.Receiver.Id, message.Date, message.Content)
@@ -144,7 +133,7 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 	}
 	id := int64(clientId)
 
-	log.Printf("New User Entered (id: %d)", id)
+	log.Printf("New user Entered (id: %d)", id)
 
 	defer ws.Close()
 
