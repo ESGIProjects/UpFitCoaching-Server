@@ -13,14 +13,14 @@ func main() {
 	// Creating router
 	router := mux.NewRouter()
 
-	// user-handling routes
+	// User-handling routes
 	router.HandleFunc("/checkmail/", routes.ExistingMail).Methods("POST")
 	router.HandleFunc("/signup/", routes.SignUp).Methods("POST")
 	router.HandleFunc("/signin/", routes.SignIn).Methods("POST")
 	router.HandleFunc("/forgot/", routes.Forgot).Methods("POST")
 
 	// Message-handling routes
-	router.HandleFunc("/messages/", GetMessages).Methods("GET")
+	router.HandleFunc("/messages/", routes.GetMessages).Methods("GET")
 	router.HandleFunc("/ws", handleConnections)
 	go handleMessages()
 

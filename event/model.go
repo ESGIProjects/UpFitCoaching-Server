@@ -19,7 +19,6 @@ type Info struct {
 }
 
 func get(db *sql.DB, query *sql.Row, eventInfo *Info) (error) {
-
 	var coach, client, createdBy, updatedBy int64
 
 	row := query.Scan(&eventInfo.Id, &eventInfo.Name, &client, &coach, &eventInfo.Start, &eventInfo.End, &eventInfo.Created, &createdBy, &eventInfo.Updated, &updatedBy)
@@ -79,7 +78,8 @@ func GetFromUserId(db *sql.DB, id int) (*sql.Rows, error) {
 }
 
 func GetConcernedUsers(db *sql.DB, id int) (*sql.Rows, error) {
-	query := `SELECT * FROM users
+	query := `SELECT id, type, mail, firstName, lastName, city, phoneNumber, address, birthDate
+	FROM users
 	NATURAL LEFT JOIN coaches
 	NATURAL LEFT JOIN clients
 	WHERE id IN
