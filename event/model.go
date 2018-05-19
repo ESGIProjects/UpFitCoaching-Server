@@ -8,6 +8,7 @@ import (
 type Info struct {
 	Id			int64		`json:"id,omitempty"`
 	Name		string		`json:"name,omitempty"`
+	Type		*int		`json:"type,omitempty"`
 	Client		user.Info	`json:"client,omitempty"`
 	Coach		user.Info	`json:"coach,omitempty"`
 	Start		string		`json:"start,omitempty"`
@@ -21,7 +22,7 @@ type Info struct {
 func get(db *sql.DB, query *sql.Row, eventInfo *Info) (error) {
 	var coach, client, createdBy, updatedBy int64
 
-	row := query.Scan(&eventInfo.Id, &eventInfo.Name, &client, &coach, &eventInfo.Start, &eventInfo.End, &eventInfo.Created, &createdBy, &eventInfo.Updated, &updatedBy)
+	row := query.Scan(&eventInfo.Id, &eventInfo.Name, &eventInfo.Type, &client, &coach, &eventInfo.Start, &eventInfo.End, &eventInfo.Created, &createdBy, &eventInfo.Updated, &updatedBy)
 	if row == sql.ErrNoRows {
 		return row
 	}

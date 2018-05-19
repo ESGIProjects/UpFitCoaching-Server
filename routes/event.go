@@ -56,18 +56,18 @@ func GetEvents(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var events []event.Info
+	events := make([]event.Info, 0)
 
 	for rows.Next() {
-		event := event.Info{}
+		eventInfo := event.Info{}
 		var client, coach, createdBy, updatedBy int64
-		rows.Scan(&event.Id, &event.Name, &client, &coach, &event.Start, &event.End, &event.Created, &createdBy, &event.Updated, &updatedBy)
-		event.Client = users[client]
-		event.Coach = users[coach]
-		event.CreatedBy = users[createdBy]
-		event.UpdatedBy = users[updatedBy]
+		rows.Scan(&eventInfo.Id, &eventInfo.Name, &eventInfo.Type, &client, &coach, &eventInfo.Start, &eventInfo.End, &eventInfo.Created, &createdBy, &eventInfo.Updated, &updatedBy)
+		eventInfo.Client = users[client]
+		eventInfo.Coach = users[coach]
+		eventInfo.CreatedBy = users[createdBy]
+		eventInfo.UpdatedBy = users[updatedBy]
 
-		events = append(events, event)
+		events = append(events, eventInfo)
 	}
 	rows.Close()
 
@@ -79,17 +79,20 @@ func AddEvent(w http.ResponseWriter, r *http.Request) {
 	db := global.OpenDB()
 	defer db.Close()
 
+	eventInfo := event.Info{}
+
 	// Get fields from request
-	name := r.PostFormValue("name")
+	eventInfo.Name = r.PostFormValue("name")
+	eventType, _ := strconv.Atoi(r.PostFormValue("type"))
 	client, _ := strconv.Atoi(r.PostFormValue("client"))
 	coach, _ := strconv.Atoi(r.PostFormValue("coach"))
-	start := r.PostFormValue("start")
-	end := r.PostFormValue("end")
-	created := r.PostFormValue("created")
+	eventInfo.Start = r.PostFormValue("start")
+	eventInfo.End = r.PostFormValue("end")
+	eventInfo.Created = r.PostFormValue("created")
 	createdBy, _ := strconv.Atoi(r.PostFormValue("createdBy"))
 
 	// Inserting into DB
-	res, err := db.Exec("INSERT INTO events (name, client, coach, start, end, created, createdBy, updated, updatedBy) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", name, client, coach, start, end, created, createdBy, created, createdBy)
+	res, err := db.Exec("INSERT INTO events (name, type, client, coach, start, end, created, createdBy, updated, updatedBy) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", eventInfo.Name, eventType, client, coach, eventInfo.Start, eventInfo.End, eventInfo.Created, createdBy, eventInfo.Created, createdBy)
 	if err != nil {
 		db.Close()
 
@@ -108,8 +111,9 @@ func AddEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	eventInfo := event.Info{}
 	eventInfo.Id = id
+	eventInfo.Type = &eventType
+
 	_, err = user.GetFromId(db, &eventInfo.Client, int64(client))
 	if err != nil {
 		db.Close()
@@ -127,10 +131,7 @@ func AddEvent(w http.ResponseWriter, r *http.Request) {
 		global.SendError(w, "internal_error", http.StatusInternalServerError)
 		return
 	}
-
-	eventInfo.Start = start
-	eventInfo.Created = created
-	eventInfo.Updated = created
+	eventInfo.Updated = eventInfo.Created
 
 	if createdBy == client {
 		eventInfo.CreatedBy = eventInfo.Client
@@ -139,5 +140,5 @@ func AddEvent(w http.ResponseWriter, r *http.Request) {
 	}
 	eventInfo.UpdatedBy = eventInfo.CreatedBy
 
-	global.SendJSON(w, eventInfo, http.StatusOK)
+	global.SendJSON(w, eventInfo, http.StatusCreated)
 }

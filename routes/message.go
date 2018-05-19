@@ -49,7 +49,7 @@ func GetMessages(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var messages []message.Info
+	messages := make([]message.Info, 0)
 
 	for rows.Next() {
 		message := message.Info{}
