@@ -22,7 +22,7 @@ func ExistingMail(w http.ResponseWriter, r *http.Request) {
 
 	// If user exists
 
-	if err != nil {
+	if err == nil {
 		w.WriteHeader(http.StatusFound) // 302 plutôt que 409 ?
 	} else {
 		w.WriteHeader(http.StatusOK)
@@ -50,7 +50,8 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 	userInfo := user.Info{}
 	_, err := user.GetFromMail(db, &userInfo, mail)
 	if err == nil {
-		println(err.Error())
+		db.Close()
+
 		global.SendError(w, "user_already_exists", http.StatusNotFound)
 		return
 	}
@@ -139,7 +140,6 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if password != typedPassword {
-		println(err.Error())
 		global.SendError(w, "user_wrong_password", http.StatusNotFound)
 		return
 	}

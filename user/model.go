@@ -6,15 +6,15 @@ import (
 )
 
 type Info struct {
-	Id			int64		`json:"id"`
-	Type		*int		`json:"type,omitempty"`
-	Mail		string		`json:"mail,omitempty"`
-	FirstName	string		`json:"firstName,omitempty"`
-	LastName	string		`json:"lastName,omitempty"`
-	City		string		`json:"city,omitempty"`
-	PhoneNumber	string		`json:"phoneNumber,omitempty"`
-	Address		string		`json:"address,omitempty"`
-	BirthDate	string		`json:"birthDate,omitempty"`
+	Id			int64	`json:"id"`
+	Type		*int	`json:"type,omitempty"`
+	Mail		string	`json:"mail,omitempty"`
+	FirstName	string	`json:"firstName,omitempty"`
+	LastName	string	`json:"lastName,omitempty"`
+	City		string	`json:"city,omitempty"`
+	PhoneNumber	string	`json:"phoneNumber,omitempty"`
+	Address		string	`json:"address,omitempty"`
+	BirthDate	string	`json:"birthDate,omitempty"`
 	Coach		*Info	`json:"coach,omitempty"`
 }
 
