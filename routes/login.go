@@ -14,18 +14,18 @@ func ExistingMail(w http.ResponseWriter, r *http.Request) {
 	db := global.OpenDB()
 
 	// Get field from request
-	mail := r.URL.Query().Get("mail")
+	mail := r.PostFormValue("mail")
 
 	// Get user from DB
 	userInfo := user.Info{}
 	_, err := user.GetFromMail(db, &userInfo, mail)
 
 	// If user exists
-
-	if err == nil {
-		w.WriteHeader(http.StatusFound) // 302 plutôt que 409 ?
-	} else {
+	if err != nil {
+		print(err.Error())
 		w.WriteHeader(http.StatusOK)
+	} else {
+		w.WriteHeader(http.StatusFound) // 302 plutôt que 409 ?
 	}
 }
 
