@@ -78,15 +78,15 @@ func GetFromUserId(db *sql.DB, id int) (*sql.Rows, error) {
 	return db.Query(query, id, id)
 }
 
-func GetConcernedUsers(db *sql.DB, id int) (*sql.Rows, error) {
-	query := `SELECT id, type, mail, firstName, lastName, city, phoneNumber, address, birthDate
-	FROM users
-	NATURAL LEFT JOIN coaches
-	NATURAL LEFT JOIN clients
-	WHERE id IN
-	(SELECT client AS id FROM events WHERE coach = ?
+func GetUsersList(db *sql.DB, id int) (map[int64]user.Info, error) {
+	query := `SELECT client AS id FROM events WHERE coach = ?
 	UNION SELECT coach AS id FROM events WHERE client = ?
-	UNION SELECT ? as id);`
+	UNION SELECT ? AS id;`
 
-	return db.Query(query, id, id, id)
+	rows, err := db.Query(query, id, id, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return user.GetListFromQuery(db, rows)
 }

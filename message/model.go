@@ -62,6 +62,20 @@ func GetConcernedUsers(db *sql.DB, id int) (*sql.Rows, error) {
 	return db.Query(query, id, id, id)
 }
 
+func GetUsersList(db *sql.DB, id int) (map[int64]user.Info, error) {
+	query := `SELECT sender AS id FROM messages WHERE receiver = ?
+	UNION SELECT receiver AS id FROM messages WHERE sender = ?
+	UNION SELECT ? AS id;
+	`
+
+	rows, err := db.Query(query, id, id, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return user.GetListFromQuery(db, rows)
+}
+
 func Save(db *sql.DB, messageInfo Info) (sql.Result, error) {
 	query := `
 	INSERT INTO messages

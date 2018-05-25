@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"server/global"
 	"strconv"
-	"database/sql"
 	"server/user"
 	"server/event"
 )
@@ -24,7 +23,8 @@ func GetEvents(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rows, err := event.GetConcernedUsers(db, userId)
+	// Get concerned users
+	users, err := event.GetUsersList(db, userId)
 	if err != nil {
 		db.Close()
 
@@ -33,21 +33,8 @@ func GetEvents(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	users := make(map[int64]user.Info)
-
-	for rows.Next() {
-		userInfo := user.Info{}
-		var address, birthDate sql.NullString
-		rows.Scan(&userInfo.Id, &userInfo.Type, &userInfo.Mail, &userInfo.FirstName, &userInfo.LastName, &userInfo.City, &userInfo.PhoneNumber, &address, &birthDate)
-		userInfo.Address = address.String
-		userInfo.BirthDate = birthDate.String
-
-		users[userInfo.Id] = userInfo
-	}
-	rows.Close()
-
 	// Retrieve every events
-	rows, err = event.GetFromUserId(db, userId)
+	rows, err := event.GetFromUserId(db, userId)
 	if err != nil {
 		db.Close()
 
@@ -62,6 +49,7 @@ func GetEvents(w http.ResponseWriter, r *http.Request) {
 		eventInfo := event.Info{}
 		var client, coach, createdBy, updatedBy int64
 		rows.Scan(&eventInfo.Id, &eventInfo.Name, &eventInfo.Type, &client, &coach, &eventInfo.Start, &eventInfo.End, &eventInfo.Created, &createdBy, &eventInfo.Updated, &updatedBy)
+
 		eventInfo.Client = users[client]
 		eventInfo.Coach = users[coach]
 		eventInfo.CreatedBy = users[createdBy]

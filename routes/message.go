@@ -4,9 +4,7 @@ import (
 	"net/http"
 	"server/global"
 	"strconv"
-	"database/sql"
 	"server/message"
-	"server/user"
 )
 
 func GetMessages(w http.ResponseWriter, r *http.Request) {
@@ -15,32 +13,27 @@ func GetMessages(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 
 	// Get field from request
-	userId, _ := strconv.Atoi(r.URL.Query().Get("userId"))
-
-	rows, err := message.GetConcernedUsers(db, userId)
+	userId, err := strconv.Atoi(r.URL.Query().Get("userId"))
 	if err != nil {
 		db.Close()
 
-		println(err.Error())
+		print(err.Error())
 		global.SendError(w, "internal_error", http.StatusInternalServerError)
 		return
 	}
 
-	users := make(map[int64]user.Info)
+	// Get concerned users
+	users, err := message.GetUsersList(db, userId)
+	if err != nil {
+		db.Close()
 
-	for rows.Next() {
-		userInfo := user.Info{}
-		var address, birthDate sql.NullString
-		rows.Scan(&userInfo.Id, &userInfo.Type, &userInfo.Mail, &userInfo.FirstName, &userInfo.LastName, &userInfo.City, &userInfo.PhoneNumber, &address, &birthDate)
-		userInfo.Address = address.String
-		userInfo.BirthDate = birthDate.String
-
-		users[userInfo.Id] = userInfo
+		print(err.Error())
+		global.SendError(w, "internal_error", http.StatusInternalServerError)
+		return
 	}
-	rows.Close()
 
 	// Retrieve every messages
-	rows, err = message.GetFromUserId(db, userId)
+	rows, err := message.GetFromUserId(db, userId)
 	if err != nil {
 		db.Close()
 
@@ -55,6 +48,7 @@ func GetMessages(w http.ResponseWriter, r *http.Request) {
 		message := message.Info{}
 		var sender, receiver int64
 		rows.Scan(&message.Id, &sender, &receiver, &message.Date, &message.Content)
+
 		message.Sender = users[sender]
 		message.Receiver = users[receiver]
 

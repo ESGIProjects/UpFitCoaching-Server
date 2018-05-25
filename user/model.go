@@ -72,3 +72,23 @@ func GetFromMail(db *sql.DB, userInfo *Info, mail string) (string, error) {
 
 	return get(db, row, userInfo)
 }
+
+func GetListFromQuery(db *sql.DB, rows *sql.Rows) (map[int64]Info, error) {
+	users := make(map[int64]Info)
+
+	for rows.Next() {
+		var userId int64
+		rows.Scan(&userId)
+
+		userInfo := Info{}
+		_, err := GetFromId(db, &userInfo, userId)
+		if err != nil {
+			print(err.Error())
+			continue
+		}
+
+		users[userId] = userInfo
+	}
+
+	return users, nil
+}
