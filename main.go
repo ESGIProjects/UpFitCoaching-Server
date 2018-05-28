@@ -27,6 +27,7 @@ func main() {
 	// Event-handling routes
 	router.HandleFunc("/events/", routes.GetEvents).Methods("GET")
 	router.HandleFunc("/events/", routes.AddEvent).Methods("POST")
+	router.HandleFunc("/events/", routes.UpdateEvent).Methods("PUT")
 
 	// Listen on port 80
 	err := http.ListenAndServe(":80", router)

@@ -48,20 +48,6 @@ func GetFromUserId(db *sql.DB, id int) (*sql.Rows, error) {
 	return db.Query(query, id, id)
 }
 
-func GetConcernedUsers(db *sql.DB, id int) (*sql.Rows, error) {
-	query := `SELECT id, type, mail, firstName, lastName, city, phoneNumber, address, birthDate
-	FROM users
-	NATURAL LEFT JOIN coaches
-	NATURAL LEFT JOIN clients
-	WHERE id IN
-	(SELECT sender AS id FROM messages WHERE receiver = ?
-	UNION SELECT receiver AS id FROM messages WHERE sender = ?
-	UNION SELECT ? as id);
-	`
-
-	return db.Query(query, id, id, id)
-}
-
 func GetUsersList(db *sql.DB, id int) (map[int64]user.Info, error) {
 	query := `SELECT sender AS id FROM messages WHERE receiver = ?
 	UNION SELECT receiver AS id FROM messages WHERE sender = ?
@@ -77,8 +63,7 @@ func GetUsersList(db *sql.DB, id int) (map[int64]user.Info, error) {
 }
 
 func Save(db *sql.DB, messageInfo Info) (sql.Result, error) {
-	query := `
-	INSERT INTO messages
+	query := `INSERT INTO messages
 	(sender, receiver, date, content)
 	VALUES (?, ?, ?, ?);
 	`

@@ -130,3 +130,41 @@ func AddEvent(w http.ResponseWriter, r *http.Request) {
 
 	global.SendJSON(w, eventInfo, http.StatusCreated)
 }
+
+func UpdateEvent(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	db := global.OpenDB()
+	defer db.Close()
+
+	// Get event ID from request
+	eventId, _ := strconv.Atoi(r.PostFormValue("eventId"))
+
+	// Retrieve event from DB
+	eventInfo := event.Info{}
+	err := event.GetFromId(db, &eventInfo, int64(eventId))
+	if err != nil {
+		db.Close()
+
+		print(err.Error())
+		global.SendError(w, "internal_error", http.StatusInternalServerError)
+		return
+	}
+
+	// Update fields from request
+	eventInfo.Name = r.PostFormValue("name")
+	eventInfo.Start = r.PostFormValue("start")
+	eventInfo.End = r.PostFormValue("end")
+	eventInfo.Updated = r.PostFormValue("updated")
+	updatedBy, _ := strconv.Atoi(r.PostFormValue("updatedBy"))
+
+	if int64(updatedBy) == eventInfo.Coach.Id {
+		eventInfo.UpdatedBy = eventInfo.Coach
+	} else {
+		eventInfo.UpdatedBy = eventInfo.Client
+	}
+
+	// Update the event
+	event.Update(db, eventInfo)
+
+	global.SendJSON(w, eventInfo, http.StatusOK)
+}

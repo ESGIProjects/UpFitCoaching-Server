@@ -90,3 +90,21 @@ func GetUsersList(db *sql.DB, id int) (map[int64]user.Info, error) {
 
 	return user.GetListFromQuery(db, rows)
 }
+
+func Save(db *sql.DB, eventInfo Info) (sql.Result, error) {
+	query := `INSERT INTO events
+	(name, type, client, coach, start, end, created, createdBy, updated, updatedBy)
+	VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+	`
+
+	return db.Exec(query, eventInfo.Name, eventInfo.Type, eventInfo.Client.Id, eventInfo.Coach.Id, eventInfo.Start, eventInfo.End, eventInfo.Created, eventInfo.CreatedBy.Id, eventInfo.Updated, eventInfo.UpdatedBy.Id)
+}
+
+func Update(db *sql.DB, eventInfo Info) (sql.Result, error) {
+	query := `UPDATE events
+	SET name = ?, type = ?, client = ?, coach = ?, start = ?, end = ?, created = ?, createdBy = ?, updated = ?, updatedBy = ?
+	WHERE id = ?;
+	`
+
+	return db.Exec(query, eventInfo.Name, eventInfo.Type, eventInfo.Client.Id, eventInfo.Coach.Id, eventInfo.Start, eventInfo.End, eventInfo.Created, eventInfo.CreatedBy.Id, eventInfo.Updated, eventInfo.UpdatedBy.Id, eventInfo.Id)
+}
