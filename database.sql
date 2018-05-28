@@ -1,35 +1,91 @@
-CREATE TABLE IF NOT EXISTS users (
-  id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  type TINYINT(1) NOT NULL DEFAULT 0,
-  mail VARCHAR(255) NOT NULL,
-  password VARCHAR(255) NOT NULL,
-  firstName VARCHAR(100) NOT NULL,
-  lastName VARCHAR(100) NOT NULL,
-  city VARCHAR(255),
-  phoneNumber VARCHAR(15)
+CREATE TABLE `users` (
+  `id`          int(11) NOT NULL AUTO_INCREMENT,
+  `type`        tinyint(1) NOT NULL DEFAULT 0,
+  `mail`        varchar(100) NOT NULL,
+  `password`    varchar(255) NOT NULL,
+  `firstName`   varchar(50) NOT NULL,
+  `lastName`    varchar(50) NOT NULL,
+  `city`        varchar(100),
+  `phoneNumber` varchar(20),
+
+  PRIMARY KEY (`id`)
 );
 
-CREATE TABLE IF NOT EXISTS coaches (
-  id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  address VARCHAR(255) NOT NULL,
+CREATE TABLE `coaches` (
+  `id`      int(11) NOT NULL AUTO_INCREMENT,
+  `address` varchar(255) NOT NULL,
 
-  FOREIGN KEY (id) REFERENCES users(id)
+  PRIMARY KEY (`id`),
+  FOREIGN KEY (`id`) REFERENCES `users`(`id`)
 );
 
-CREATE TABLE IF NOT EXISTS clients (
-  id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  birthDate DATE NOT NULL,
+CREATE TABLE `clients` (
+  `id`        int(11) NOT NULL AUTO_INCREMENT,
+  `birthDate` datetime NOT NULL,
+  `coachId`   int(11) DEFAULT NULL,
 
-  FOREIGN KEY (id) REFERENCES users(id)
+  PRIMARY KEY (`id`),
+  FOREIGN KEY (`id`) REFERENCES `users`(`id`),
+  FOREIGN KEY (`coachId`) REFERENCES `users`(`id`)
 );
 
-CREATE TABLE IF NOT EXISTS messages (
-  id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  sender INT NOT NULL,
-  receiver INT NOT NULL,
-  date DATETIME NOT NULL,
-  content TEXT NOT NULL,
+CREATE TABLE `messages` (
+  `id`        int(11) NOT NULL AUTO_INCREMENT,
+  `sender`    int(11) NOT NULL,
+  `receiver`  int(11) NOT NULL,
+  `date`      datetime NOT NULL,
+  `content`   text NOT NULL,
 
-  FOREIGN KEY (sender) REFERENCES users(id),
-  FOREIGN KEY (receiver) REFERENCES users(id)
+  PRIMARY KEY (`id`),
+  FOREIGN KEY (`sender`) REFERENCES `users`(`id`),
+  FOREIGN KEY (`receiver`) REFERENCES `users`(`id`)
+);
+
+CREATE TABLE `events` (
+  `id`          int(11) NOT NULL AUTO_INCREMENT,
+  `name`        varchar(100) NOT NULL,
+  `type`        int(1) NOT NULL DEFAULT 0,
+  `status`      int(1) NOT NULL DEFAULT 0,
+  `firstUser`   int(11) NOT NULL,
+  `secondUser`  int(11) NOT NULL,
+  `start`       datetime NOT NULL,
+  `end`         datetime NOT NULL,
+  `created`     datetime NOT NULL,
+  `createdBy`   int(11) NOT NULL,
+  `updated`     datetime NOT NULL,
+  `updatedBy`   int(11) NOT NULL,
+
+  PRIMARY KEY (`id`),
+  FOREIGN KEY (`firstUser`) REFERENCES `users`(`id`),
+  FOREIGN KEY (`secondUser`) REFERENCES `users`(`id`),
+  FOREIGN KEY (`createdBy`) REFERENCES `users`(`id`),
+  FOREIGN KEY (`updatedBy`) REFERENCES `users`(`id`)
+);
+
+CREATE TABLE `forums` (
+  `id`      int(11) NOT NULL AUTO_INCREMENT,
+  `title`   varchar(100) NOT NULL,
+
+  PRIMARY KEY (`id`)
+);
+
+CREATE TABLE `threads` (
+  `id`      int(11) NOT NULL AUTO_INCREMENT,
+  `title`   varchar(100) NOT NULL,
+  `forumId` int(11) NOT NULL,
+
+  PRIMARY KEY (`id`),
+  FOREIGN KEY (`forumId`) REFERENCES `forums`(`id`)
+);
+
+CREATE TABLE `posts` (
+  `id`       int(11) NOT NULL AUTO_INCREMENT,
+  `threadId` int(11) NOT NULL,
+  `userId`   int(11) NOT NULL,
+  `date`     datetime NOT NULL,
+  `content`  text NOT NULL,
+
+  PRIMARY KEY (`id`),
+  FOREIGN KEY (`threadId`) REFERENCES `threads`(`id`),
+  FOREIGN KEY (`userId`) REFERENCES `users`(`id`)
 );
