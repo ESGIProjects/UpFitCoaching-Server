@@ -166,6 +166,98 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 	global.SendJSON(w, userInfo, http.StatusOK)
 }
 
+func UpdateProfile(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	db := global.OpenDB()
+	defer db.Close()
+
+	// Get user ID from request
+	userId, _ := strconv.Atoi(r.PostFormValue("userId"))
+
+	// Retrieve user from DB
+	userInfo := user.Info{}
+	_, err := user.GetFromId(db, &userInfo, int64(userId))
+	if err != nil {
+		db.Close()
+
+		println(err.Error())
+		global.SendError(w, "internal_error", http.StatusNotModified)
+		return
+	}
+
+	// Update fields from request
+	userInfo.Mail = r.PostFormValue("mail")
+	userInfo.FirstName = r.PostFormValue("firstName")
+	userInfo.LastName = r.PostFormValue("lastName")
+	userInfo.City = r.PostFormValue("city")
+	userInfo.PhoneNumber = r.PostFormValue("phoneNumber")
+
+	// Potentially nil fields
+	password := r.PostFormValue("password")
+	address := r.PostFormValue("address")
+
+	// Start DB transaction
+	tx, err := db.Begin()
+	if err != nil {
+		db.Close()
+
+		println(err.Error())
+		global.SendError(w, "internal_error", http.StatusNotModified)
+		return
+	}
+
+	// Update the user
+	_, err = tx.Exec("UPDATE users SET mail = ?, firstName = ?, lastName = ?, city = ?, phoneNumber = ? WHERE id = ?", userInfo.Mail, userInfo.FirstName, userInfo.LastName, userInfo.City, userInfo.PhoneNumber, userInfo.Id)
+	if err != nil {
+		tx.Rollback()
+		db.Close()
+
+		println(err.Error())
+		global.SendError(w, "internal_error", http.StatusNotModified)
+		return
+	}
+
+	// Update the password if needed
+	if password != "" {
+		_, err = tx.Exec("UPDATE users SET password = ? WHERE id = ?", password, userInfo.Id)
+		if err != nil {
+			tx.Rollback()
+			db.Close()
+
+			println(err.Error())
+			global.SendError(w, "internal_error", http.StatusNotModified)
+			return
+		}
+	}
+
+	// Update the coach's adress if needed
+	if address != "" {
+		_, err = tx.Exec("UPDATE coaches SET address = ? WHERE id = ?", address, userInfo.Id)
+		if err != nil {
+			tx.Rollback()
+			db.Close()
+
+			println(err.Error())
+			global.SendError(w, "internal_error", http.StatusNotModified)
+			return
+		}
+
+		userInfo.Address = address
+	}
+
+	// Commit work to database
+	if tx.Commit() != nil {
+		db.Close()
+
+		println(err.Error())
+		global.SendError(w, "user_update_failed", http.StatusNotModified)
+		return
+	}
+
+	// Send the updated user
+	global.SendJSON(w, userInfo, http.StatusOK)
+}
+
 func Forgot(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	db := global.OpenDB()

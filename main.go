@@ -18,6 +18,7 @@ func main() {
 	router.HandleFunc("/signup/", routes.SignUp).Methods("POST")
 	router.HandleFunc("/signin/", routes.SignIn).Methods("POST")
 	router.HandleFunc("/forgot/", routes.Forgot).Methods("POST")
+	router.HandleFunc("/users/", routes.UpdateProfile).Methods("PUT")
 
 	// Message-handling routes
 	router.HandleFunc("/messages/", routes.GetMessages).Methods("GET")
