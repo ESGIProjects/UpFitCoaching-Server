@@ -7,6 +7,8 @@ import (
 	"server/global"
 	"strconv"
 	"database/sql"
+	"server/message"
+	"time"
 )
 
 func ExistingMail(w http.ResponseWriter, r *http.Request) {
@@ -115,19 +117,27 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// If client, retrieve coach data
+	// Format the response
+	userInfo.Id = id
+
+	// If client, retrieve coach data and send first message
 	if userType == 0 {
 		coach := user.Info{}
 		user.GetFromId(db, &coach, uniqueCoachId)
 		userInfo.Coach = &coach
+
+		currentTime := time.Now().Local()
+
+		messageInfo := message.Info{}
+		messageInfo.Sender = userInfo
+		messageInfo.Receiver = coach
+		messageInfo.Date = currentTime.Format("2006-01-02 15:04:05")
+		messageInfo.Content = "Nouveau client"
+
+		message.Save(db, messageInfo)
 	}
 
 	db.Close()
-
-	// Format the response
-	//userInfo = user.Info{}
-	userInfo.Id = id
-
 	global.SendJSON(w, userInfo, http.StatusCreated)
 }
 
