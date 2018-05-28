@@ -29,6 +29,8 @@ func ExistingMail(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+const uniqueCoachId = 15
+
 func SignUp(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	db := global.OpenDB()
@@ -92,7 +94,7 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 	if userType == 2 {
 		_, err = tx.Exec("INSERT INTO coaches (id, address) VALUES(?, ?)", id, address)
 	} else {
-		_, err = tx.Exec("INSERT INTO clients (id, birthDate) VALUES(?, ?)", id, birthDate)
+		_, err = tx.Exec("INSERT INTO clients (id, birthDate, coachId) VALUES(?, ?, ?)", id, birthDate, uniqueCoachId)
 	}
 
 	if err != nil {
@@ -111,6 +113,13 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		println(err.Error())
 		global.SendError(w, "user_insert_failed", http.StatusNotModified)
 		return
+	}
+
+	// If client, retrieve coach data
+	if userType == 0 {
+		coach := user.Info{}
+		user.GetFromId(db, &coach, uniqueCoachId)
+		userInfo.Coach = &coach
 	}
 
 	db.Close()
