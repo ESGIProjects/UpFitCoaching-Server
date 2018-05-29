@@ -34,6 +34,7 @@ func main() {
 	router.HandleFunc("/forums/", routes.GetForums).Methods("GET")
 	router.HandleFunc("/threads/", routes.GetThreads).Methods("GET")
 	router.HandleFunc("/thread/", routes.GetThread).Methods("GET")
+	router.HandleFunc("/thread/", routes.CreateThread).Methods("POST")
 
 	// Listen on port 80
 	err := http.ListenAndServe(":80", router)

@@ -12,13 +12,13 @@ type Info struct {
 }
 
 type Thread struct {
-	Id		int64		`json:"id,omitempty"`
+	Id		int64		`json:"id"`
 	Title	string		`json:"title"`
 	Forum	Info		`json:"forum"`
 }
 
 type Post struct {
-	Id			int64			`json:"id,omitempty"`
+	Id			int64			`json:"id"`
 	Thread		Thread			`json:"thread"`
 	User		user.Info		`json:"user"`
 	Date		string			`json:"date"`
