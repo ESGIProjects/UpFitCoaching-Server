@@ -161,3 +161,40 @@ func CreateThread(w http.ResponseWriter, r *http.Request) {
 
 	global.SendJSON(w, json, http.StatusCreated)
 }
+
+func AddPost(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	db := global.OpenDB()
+	defer db.Close()
+
+	// Get fields from request
+	userId, _ := strconv.Atoi(r.PostFormValue("userId"))
+	threadId, _ := strconv.Atoi(r.PostFormValue("threadId"))
+	date := r.PostFormValue("date")
+	content := r.PostFormValue("content")
+
+	// Inserting post into DB
+	res, err := db.Exec("INSERT INTO posts (threadId, userId, date, content) VALUES (?, ?, ?, ?)", threadId, userId, date, content)
+	if err != nil {
+		db.Close()
+
+		print(err.Error())
+		global.SendError(w, "internal_error", http.StatusInternalServerError)
+		return
+	}
+
+	// Get the new post ID
+	postId, err := res.LastInsertId()
+	if err != nil {
+		db.Close()
+
+		print(err.Error())
+		global.SendError(w, "internal_error", http.StatusInternalServerError)
+		return
+	}
+
+	json := make(map[string]int64)
+	json["postId"] = postId
+
+	global.SendJSON(w, json, http.StatusCreated)
+}
