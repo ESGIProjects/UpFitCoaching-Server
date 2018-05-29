@@ -117,6 +117,6 @@ func handleMessages() {
 			}
 		}
 
-		// PUSH NOTIFICATION HERE
+		// TODO PUSH NOTIFICATION
 	}
 }

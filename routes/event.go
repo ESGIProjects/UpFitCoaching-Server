@@ -47,11 +47,11 @@ func GetEvents(w http.ResponseWriter, r *http.Request) {
 
 	for rows.Next() {
 		eventInfo := event.Info{}
-		var client, coach, createdBy, updatedBy int64
-		rows.Scan(&eventInfo.Id, &eventInfo.Name, &eventInfo.Type, &client, &coach, &eventInfo.Start, &eventInfo.End, &eventInfo.Created, &createdBy, &eventInfo.Updated, &updatedBy)
+		var firstUser, secondUser, createdBy, updatedBy int64
+		rows.Scan(&eventInfo.Id, &eventInfo.Name, &eventInfo.Type, &eventInfo.Status, &firstUser, &secondUser, &eventInfo.Start, &eventInfo.End, &eventInfo.Created, &createdBy, &eventInfo.Updated, &updatedBy)
 
-		eventInfo.Client = users[client]
-		eventInfo.Coach = users[coach]
+		eventInfo.FirstUser = users[firstUser]
+		eventInfo.SecondUser = users[secondUser]
 		eventInfo.CreatedBy = users[createdBy]
 		eventInfo.UpdatedBy = users[updatedBy]
 
@@ -72,15 +72,17 @@ func AddEvent(w http.ResponseWriter, r *http.Request) {
 	// Get fields from request
 	eventInfo.Name = r.PostFormValue("name")
 	eventType, _ := strconv.Atoi(r.PostFormValue("type"))
-	client, _ := strconv.Atoi(r.PostFormValue("client"))
-	coach, _ := strconv.Atoi(r.PostFormValue("coach"))
+	firstUser, _ := strconv.Atoi(r.PostFormValue("firstUser"))
+	secondUser, _ := strconv.Atoi(r.PostFormValue("secondUser"))
 	eventInfo.Start = r.PostFormValue("start")
 	eventInfo.End = r.PostFormValue("end")
 	eventInfo.Created = r.PostFormValue("created")
 	createdBy, _ := strconv.Atoi(r.PostFormValue("createdBy"))
 
+	status := 0
+
 	// Inserting into DB
-	res, err := db.Exec("INSERT INTO events (name, type, client, coach, start, end, created, createdBy, updated, updatedBy) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", eventInfo.Name, eventType, client, coach, eventInfo.Start, eventInfo.End, eventInfo.Created, createdBy, eventInfo.Created, createdBy)
+	res, err := db.Exec("INSERT INTO events (name, type, status, firstUser, secondUser, start, end, created, createdBy, updated, updatedBy) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", eventInfo.Name, eventType, status, firstUser, secondUser, eventInfo.Start, eventInfo.End, eventInfo.Created, createdBy, eventInfo.Created, createdBy)
 	if err != nil {
 		db.Close()
 
@@ -100,9 +102,10 @@ func AddEvent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	eventInfo.Id = id
-	eventInfo.Type = &eventType
+	eventInfo.Type = eventType
+	eventInfo.Status = status
 
-	_, err = user.GetFromId(db, &eventInfo.Client, int64(client))
+	_, err = user.GetFromId(db, &eventInfo.FirstUser, int64(firstUser))
 	if err != nil {
 		db.Close()
 
@@ -111,7 +114,7 @@ func AddEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = user.GetFromId(db, &eventInfo.Coach, int64(coach))
+	_, err = user.GetFromId(db, &eventInfo.SecondUser, int64(secondUser))
 	if err != nil {
 		db.Close()
 
@@ -121,10 +124,10 @@ func AddEvent(w http.ResponseWriter, r *http.Request) {
 	}
 	eventInfo.Updated = eventInfo.Created
 
-	if createdBy == client {
-		eventInfo.CreatedBy = eventInfo.Client
+	if createdBy == firstUser {
+		eventInfo.CreatedBy = eventInfo.FirstUser
 	} else {
-		eventInfo.CreatedBy = eventInfo.Coach
+		eventInfo.CreatedBy = eventInfo.SecondUser
 	}
 	eventInfo.UpdatedBy = eventInfo.CreatedBy
 
@@ -152,19 +155,24 @@ func UpdateEvent(w http.ResponseWriter, r *http.Request) {
 
 	// Update fields from request
 	eventInfo.Name = r.PostFormValue("name")
+	eventInfo.Status, _ = strconv.Atoi(r.PostFormValue("status"))
 	eventInfo.Start = r.PostFormValue("start")
 	eventInfo.End = r.PostFormValue("end")
 	eventInfo.Updated = r.PostFormValue("updated")
 	updatedBy, _ := strconv.Atoi(r.PostFormValue("updatedBy"))
 
-	if int64(updatedBy) == eventInfo.Coach.Id {
-		eventInfo.UpdatedBy = eventInfo.Coach
+	if int64(updatedBy) == eventInfo.FirstUser.Id {
+		eventInfo.UpdatedBy = eventInfo.FirstUser
 	} else {
-		eventInfo.UpdatedBy = eventInfo.Client
+		eventInfo.UpdatedBy = eventInfo.SecondUser
 	}
+
+	// TODO - Change status if needed
 
 	// Update the event
 	event.Update(db, eventInfo)
+
+	// TODO - Notification with status change
 
 	global.SendJSON(w, eventInfo, http.StatusOK)
 }

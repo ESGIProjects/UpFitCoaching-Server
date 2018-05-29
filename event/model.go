@@ -6,55 +6,56 @@ import (
 )
 
 type Info struct {
-	Id			int64		`json:"id,omitempty"`
-	Name		string		`json:"name,omitempty"`
-	Type		*int		`json:"type,omitempty"`
-	Client		user.Info	`json:"client,omitempty"`
-	Coach		user.Info	`json:"coach,omitempty"`
-	Start		string		`json:"start,omitempty"`
-	End			string		`json:"end,omitempty"`
-	Created		string		`json:"created,omitempty"`
-	CreatedBy	user.Info	`json:"createdBy,omitempty"`
-	Updated		string		`json:"updated,omitempty"`
-	UpdatedBy	user.Info	`json:"updatedBy,omitempty"`
+	Id			int64		`json:"id"`
+	Name		string		`json:"name"`
+	Type		int			`json:"type"`
+	Status		int			`json:"status"`
+	FirstUser	user.Info	`json:"firstUser"`
+	SecondUser	user.Info	`json:"secondUser"`
+	Start		string		`json:"start"`
+	End			string		`json:"end"`
+	Created		string		`json:"created"`
+	CreatedBy	user.Info	`json:"createdBy"`
+	Updated		string		`json:"updated"`
+	UpdatedBy	user.Info	`json:"updatedBy"`
 }
 
 func get(db *sql.DB, query *sql.Row, eventInfo *Info) (error) {
-	var coach, client, createdBy, updatedBy int64
+	var firstUser, secondUser, createdBy, updatedBy int64
 
-	row := query.Scan(&eventInfo.Id, &eventInfo.Name, &eventInfo.Type, &client, &coach, &eventInfo.Start, &eventInfo.End, &eventInfo.Created, &createdBy, &eventInfo.Updated, &updatedBy)
+	row := query.Scan(&eventInfo.Id, &eventInfo.Name, &eventInfo.Type, &eventInfo.Status, &firstUser, &secondUser, &eventInfo.Start, &eventInfo.End, &eventInfo.Created, &createdBy, &eventInfo.Updated, &updatedBy)
 	if row == sql.ErrNoRows {
 		return row
 	}
 
-	// Client
-	clientInfo := user.Info{}
-	_, err := user.GetFromId(db, &clientInfo, client)
+	// First user
+	firstUserInfo := user.Info{}
+	_, err := user.GetFromId(db, &firstUserInfo, firstUser)
 	if err != nil {
 		return err
 	}
-	eventInfo.Client = clientInfo
+	eventInfo.FirstUser = firstUserInfo
 
-	// Coach
-	coachInfo := user.Info{}
-	_, err = user.GetFromId(db, &coachInfo, coach)
+	// Second user
+	secondUserInfo := user.Info{}
+	_, err = user.GetFromId(db, &secondUserInfo, secondUser)
 	if err != nil {
 		return err
 	}
-	eventInfo.Coach = coachInfo
+	eventInfo.SecondUser = secondUserInfo
 
 	// Created by
-	if createdBy == client {
-		eventInfo.CreatedBy = clientInfo
+	if createdBy == firstUser {
+		eventInfo.CreatedBy = firstUserInfo
 	} else {
-		eventInfo.CreatedBy = coachInfo
+		eventInfo.CreatedBy = secondUserInfo
 	}
 
 	// Updated by
-	if updatedBy == client {
-		eventInfo.UpdatedBy = clientInfo
+	if updatedBy == firstUser {
+		eventInfo.UpdatedBy = firstUserInfo
 	} else {
-		eventInfo.UpdatedBy = coachInfo
+		eventInfo.UpdatedBy = secondUserInfo
 	}
 
 	return nil
@@ -72,15 +73,15 @@ func GetFromId(db *sql.DB, eventInfo *Info, id int64) (error) {
 
 func GetFromUserId(db *sql.DB, id int) (*sql.Rows, error) {
 	query := `SELECT * FROM events
-	WHERE client = ? OR coach = ?
+	WHERE firstUser = ? OR secondUser = ?
 	ORDER BY start`
 
 	return db.Query(query, id, id)
 }
 
 func GetUsersList(db *sql.DB, id int) (map[int64]user.Info, error) {
-	query := `SELECT client AS id FROM events WHERE coach = ?
-	UNION SELECT coach AS id FROM events WHERE client = ?
+	query := `SELECT firstUser AS id FROM events WHERE secondUser = ?
+	UNION SELECT secondUser AS id FROM events WHERE firstUser = ?
 	UNION SELECT ? AS id;`
 
 	rows, err := db.Query(query, id, id, id)
@@ -93,18 +94,16 @@ func GetUsersList(db *sql.DB, id int) (map[int64]user.Info, error) {
 
 func Save(db *sql.DB, eventInfo Info) (sql.Result, error) {
 	query := `INSERT INTO events
-	(name, type, client, coach, start, end, created, createdBy, updated, updatedBy)
-	VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
-	`
+	(name, type, status, firstUser, secondUser, start, end, created, createdBy, updated, updatedBy)
+	VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`
 
-	return db.Exec(query, eventInfo.Name, eventInfo.Type, eventInfo.Client.Id, eventInfo.Coach.Id, eventInfo.Start, eventInfo.End, eventInfo.Created, eventInfo.CreatedBy.Id, eventInfo.Updated, eventInfo.UpdatedBy.Id)
+	return db.Exec(query, eventInfo.Name, eventInfo.Type, eventInfo.Status, eventInfo.FirstUser.Id, eventInfo.SecondUser.Id, eventInfo.Start, eventInfo.End, eventInfo.Created, eventInfo.CreatedBy.Id, eventInfo.Updated, eventInfo.UpdatedBy.Id)
 }
 
 func Update(db *sql.DB, eventInfo Info) (sql.Result, error) {
 	query := `UPDATE events
-	SET name = ?, type = ?, client = ?, coach = ?, start = ?, end = ?, created = ?, createdBy = ?, updated = ?, updatedBy = ?
-	WHERE id = ?;
-	`
+	SET name = ?, type = ?, status = ?, firstUser = ?, secondUser = ?, start = ?, end = ?, created = ?, createdBy = ?, updated = ?, updatedBy = ?
+	WHERE id = ?;`
 
-	return db.Exec(query, eventInfo.Name, eventInfo.Type, eventInfo.Client.Id, eventInfo.Coach.Id, eventInfo.Start, eventInfo.End, eventInfo.Created, eventInfo.CreatedBy.Id, eventInfo.Updated, eventInfo.UpdatedBy.Id, eventInfo.Id)
+	return db.Exec(query, eventInfo.Name, eventInfo.Type, eventInfo.Status, eventInfo.FirstUser.Id, eventInfo.SecondUser.Id, eventInfo.Start, eventInfo.End, eventInfo.Created, eventInfo.CreatedBy.Id, eventInfo.Updated, eventInfo.UpdatedBy.Id, eventInfo.Id)
 }
