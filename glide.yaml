@@ -3,3 +3,4 @@ import:
 - package: github.com/go-sql-driver/mysql
 - package: github.com/gorilla/mux
 - package: github.com/gorilla/websocket
+- package: github.com/firebase/firebase-admin-go
