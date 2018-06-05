@@ -1,6 +1,12 @@
+# IDE
 .idea/*
+
+# Libraries
 vendor/*
 
 # Don't push the binary
 server
 server.exe
+
+# Firebase
+upfit-serviceAccountKey.json
