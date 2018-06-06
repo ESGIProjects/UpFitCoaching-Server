@@ -8,6 +8,7 @@ import (
 	"errors"
 	"server/global"
 	"server/message"
+	"firebase.google.com/go/messaging"
 )
 
 type Client struct {
@@ -97,6 +98,9 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 
 		// Send the new message to broadcast channel
 		broadcast <- messageInfo
+
+		// Send notification for the new message
+		sendMessageNotifications(messageInfo)
 	}
 }
 
@@ -116,7 +120,29 @@ func handleMessages() {
 				}
 			}
 		}
-
-		// PUSH NOTIFICATION HERE
 	}
 }
+
+func sendMessageNotifications(message message.Info) {
+	db := global.OpenDB()
+	defer db.Close()
+
+	tokens, err := global.GetTokensForUserId(db, message.Receiver.Id)
+	if err != nil {
+		db.Close()
+		print(err.Error())
+		return
+	}
+
+	notifications := make([]*messaging.Message, 0)
+
+	for _, token := range tokens {
+		notification := global.MessageNotification(token, message)
+		notifications = append(notifications, notification)
+	}
+
+	global.SendNotifications(notifications...)
+}
+
+
+

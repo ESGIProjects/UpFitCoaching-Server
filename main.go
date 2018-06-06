@@ -7,11 +7,8 @@ import (
 	"github.com/gorilla/mux"
 	"server/routes"
 
-	"google.golang.org/api/option"
-	"context"
 	"firebase.google.com/go/messaging"
-	"firebase.google.com/go"
-	"fmt"
+	"server/global"
 )
 
 func main() {
@@ -33,8 +30,8 @@ func main() {
 	router.HandleFunc("/events/", routes.GetEvents).Methods("GET")
 	router.HandleFunc("/events/", routes.AddEvent).Methods("POST")
 
-	// Notification test routes
-	router.HandleFunc("/notification", NotificationTest).Methods("GET")
+	// Debug routes
+	router.HandleFunc("/notification", DebugNotifications).Methods("GET")
 
 	// Listen on port 80
 	err := http.ListenAndServe(":80", router)
@@ -43,33 +40,20 @@ func main() {
 	}
 }
 
-func NotificationTest(w http.ResponseWriter, r *http.Request) {
-	// Initializing Firebase app
-	opt := option.WithCredentialsFile("upfit-serviceAccountKey.json")
-	app, err := firebase.NewApp(context.Background(), nil, opt)
-	if err != nil {
-		log.Fatalf("error initializing app: %v\n", err)
+func DebugNotifications(w http.ResponseWriter, r *http.Request) {
+	db := global.OpenDB()
+	defer db.Close()
+
+	tokensDictionary := global.GetTokens(db, 15)
+	notifications := make([]*messaging.Message, 0)
+
+	for _, tokens := range tokensDictionary {
+		for _, token := range tokens {
+
+			notification := global.DebugNotification(token)
+			notifications = append(notifications, notification)
+		}
 	}
 
-	// Obtain a messaging client from the Firebase app
-	ctx := context.Background()
-	client, err := app.Messaging(ctx)
-
-	// This registration token comes from the client FCM SDKs
-	registrationToken := "f4SDWAFsSGk:APA91bFT-yb9NzMbF4idW3cS7ckW8oAZCYQ77fJ9HVhCLQ5zUjfm_5jN7n_1EiEM50aDfOA1bsDGemv121OiDJQL8se5MrMkgQiIdKNdKMIjeKF7bfVchFVymEZR7Zf_my78K9CPRX7x"
-
-	message := &messaging.Message{
-		Notification: &messaging.Notification{
-			Title: "Titre test",
-			Body: "Body test",
-		},
-		Token: registrationToken,
-	}
-
-	response, err := client.Send(ctx, message)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	fmt.Println("Successfully sent message:", response)
+	global.SendNotifications(notifications...)
 }
