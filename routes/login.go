@@ -7,6 +7,8 @@ import (
 	"server/global"
 	"strconv"
 	"database/sql"
+	"server/message"
+	"time"
 )
 
 func ExistingMail(w http.ResponseWriter, r *http.Request) {
@@ -28,6 +30,8 @@ func ExistingMail(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusFound) // 302 plutôt que 409 ?
 	}
 }
+
+const uniqueCoachId = 15
 
 func SignUp(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
@@ -92,7 +96,7 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 	if userType == 2 {
 		_, err = tx.Exec("INSERT INTO coaches (id, address) VALUES(?, ?)", id, address)
 	} else {
-		_, err = tx.Exec("INSERT INTO clients (id, birthDate) VALUES(?, ?)", id, birthDate)
+		_, err = tx.Exec("INSERT INTO clients (id, birthDate, coachId) VALUES(?, ?, ?)", id, birthDate, uniqueCoachId)
 	}
 
 	if err != nil {
@@ -113,12 +117,27 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	db.Close()
-
 	// Format the response
-	//userInfo = user.Info{}
 	userInfo.Id = id
 
+	// If client, retrieve coach data and send first message
+	if userType == 0 {
+		coach := user.Info{}
+		user.GetFromId(db, &coach, uniqueCoachId)
+		userInfo.Coach = &coach
+
+		currentTime := time.Now().Local()
+
+		messageInfo := message.Info{}
+		messageInfo.Sender = userInfo
+		messageInfo.Receiver = coach
+		messageInfo.Date = currentTime.Format("2006-01-02 15:04:05")
+		messageInfo.Content = "Nouveau client"
+
+		message.Save(db, messageInfo)
+	}
+
+	db.Close()
 	global.SendJSON(w, userInfo, http.StatusCreated)
 }
 
@@ -144,6 +163,98 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	global.SendJSON(w, userInfo, http.StatusOK)
+}
+
+func UpdateProfile(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	db := global.OpenDB()
+	defer db.Close()
+
+	// Get user ID from request
+	userId, _ := strconv.Atoi(r.PostFormValue("userId"))
+
+	// Retrieve user from DB
+	userInfo := user.Info{}
+	_, err := user.GetFromId(db, &userInfo, int64(userId))
+	if err != nil {
+		db.Close()
+
+		println(err.Error())
+		global.SendError(w, "internal_error", http.StatusNotModified)
+		return
+	}
+
+	// Update fields from request
+	userInfo.Mail = r.PostFormValue("mail")
+	userInfo.FirstName = r.PostFormValue("firstName")
+	userInfo.LastName = r.PostFormValue("lastName")
+	userInfo.City = r.PostFormValue("city")
+	userInfo.PhoneNumber = r.PostFormValue("phoneNumber")
+
+	// Potentially nil fields
+	password := r.PostFormValue("password")
+	address := r.PostFormValue("address")
+
+	// Start DB transaction
+	tx, err := db.Begin()
+	if err != nil {
+		db.Close()
+
+		println(err.Error())
+		global.SendError(w, "internal_error", http.StatusNotModified)
+		return
+	}
+
+	// Update the user
+	_, err = tx.Exec("UPDATE users SET mail = ?, firstName = ?, lastName = ?, city = ?, phoneNumber = ? WHERE id = ?", userInfo.Mail, userInfo.FirstName, userInfo.LastName, userInfo.City, userInfo.PhoneNumber, userInfo.Id)
+	if err != nil {
+		tx.Rollback()
+		db.Close()
+
+		println(err.Error())
+		global.SendError(w, "internal_error", http.StatusNotModified)
+		return
+	}
+
+	// Update the password if needed
+	if password != "" {
+		_, err = tx.Exec("UPDATE users SET password = ? WHERE id = ?", password, userInfo.Id)
+		if err != nil {
+			tx.Rollback()
+			db.Close()
+
+			println(err.Error())
+			global.SendError(w, "internal_error", http.StatusNotModified)
+			return
+		}
+	}
+
+	// Update the coach's adress if needed
+	if address != "" {
+		_, err = tx.Exec("UPDATE coaches SET address = ? WHERE id = ?", address, userInfo.Id)
+		if err != nil {
+			tx.Rollback()
+			db.Close()
+
+			println(err.Error())
+			global.SendError(w, "internal_error", http.StatusNotModified)
+			return
+		}
+
+		userInfo.Address = address
+	}
+
+	// Commit work to database
+	if tx.Commit() != nil {
+		db.Close()
+
+		println(err.Error())
+		global.SendError(w, "user_update_failed", http.StatusNotModified)
+		return
+	}
+
+	// Send the updated user
 	global.SendJSON(w, userInfo, http.StatusOK)
 }
 

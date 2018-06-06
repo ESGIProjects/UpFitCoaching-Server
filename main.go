@@ -20,6 +20,7 @@ func main() {
 	router.HandleFunc("/signup/", routes.SignUp).Methods("POST")
 	router.HandleFunc("/signin/", routes.SignIn).Methods("POST")
 	router.HandleFunc("/forgot/", routes.Forgot).Methods("POST")
+	router.HandleFunc("/users/", routes.UpdateProfile).Methods("PUT")
 
 	// Message-handling routes
 	router.HandleFunc("/messages/", routes.GetMessages).Methods("GET")
@@ -29,6 +30,14 @@ func main() {
 	// Event-handling routes
 	router.HandleFunc("/events/", routes.GetEvents).Methods("GET")
 	router.HandleFunc("/events/", routes.AddEvent).Methods("POST")
+	router.HandleFunc("/events/", routes.UpdateEvent).Methods("PUT")
+
+	// Forum-handling routes
+	router.HandleFunc("/forums/", routes.GetForums).Methods("GET")
+	router.HandleFunc("/threads/", routes.GetThreads).Methods("GET")
+	router.HandleFunc("/thread/", routes.GetThread).Methods("GET")
+	router.HandleFunc("/thread/", routes.CreateThread).Methods("POST")
+	router.HandleFunc("/post/", routes.AddPost).Methods("POST")
 
 	// Debug routes
 	router.HandleFunc("/notification", DebugNotifications).Methods("GET")

@@ -1,3 +1,5 @@
+START TRANSACTION;
+
 -- Users
 INSERT INTO users (type, mail, password, firstName, lastName, city, phoneNumber) VALUES (1, 'jasonpierna@icloud.com', 'motdepasse', 'Jason', 'Pierna', 'Garges-lès-Gonesse', '0123456789');
 INSERT INTO users (type, mail, password, firstName, lastName, city, phoneNumber) VALUES (1, 'kevints.le@gmail.com', 'motdepasse', 'Kévin', 'Le', 'Ermont', '0123456789');
@@ -21,3 +23,5 @@ INSERT INTO messages (sender, receiver, date, content) VALUES (2, 4, CURRENT_TIM
 
 INSERT INTO messages (sender, receiver, date, content) VALUES (4, 3, CURRENT_TIMESTAMP, 'Hello Maeva !');
 INSERT INTO messages (sender, receiver, date, content) VALUES (3, 4, CURRENT_TIMESTAMP, 'Ça va ?');
+
+COMMIT;

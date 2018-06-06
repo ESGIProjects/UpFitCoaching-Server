@@ -10,3 +10,6 @@ server.exe
 
 # Firebase
 upfit-serviceAccountKey.json
+
+# Don't push logs
+nohup.out
