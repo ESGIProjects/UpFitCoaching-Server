@@ -22,12 +22,10 @@ func OpenDB() (db *sql.DB) {
 	dbPass := "root"
 	dbName := "upfit"
 
-	db, err := sql.Open(dbDriver, dbUser+":"+dbPass+"@/"+dbName)
+	db, err := sql.Open(dbDriver, dbUser+":"+dbPass+"@/"+dbName+"?charset=utf8mb4,utf8")
 	if err != nil {
 		panic(err.Error())
 	}
-
-	db.Exec("SET NAMES utf8mb4")
 
 	return db
 }
