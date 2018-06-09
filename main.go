@@ -9,11 +9,15 @@ import (
 
 	"firebase.google.com/go/messaging"
 	"server/global"
+	"strconv"
 )
 
 func main() {
 	// Creating router
 	router := mux.NewRouter()
+
+	// Notification token
+	router.HandleFunc("/token/", AddOrUpdateToken).Methods("POST")
 
 	// User-handling routes
 	router.HandleFunc("/checkmail/", routes.ExistingMail).Methods("POST")
@@ -47,6 +51,46 @@ func main() {
 	if err != nil {
 		log.Fatal("ListenAndServe:", err)
 	}
+}
+
+func AddOrUpdateToken(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	db := global.OpenDB()
+	defer db.Close()
+
+	// Get fields from request
+	userId, _ := strconv.Atoi(r.PostFormValue("userId"))
+	token := r.PostFormValue("token")
+
+	// Possible nil value
+	oldToken := r.PostFormValue("oldToken")
+
+	var query string
+	args := make([]interface{}, 0)
+
+
+	if oldToken == "" {
+		// Add
+		query = "INSERT INTO tokens (userId, token) VALUES(?, ?)"
+		args = append(args, userId, token)
+
+	} else {
+		// Update
+		query = "UPDATE tokens SET token = ? WHERE token = ?"
+		args = append(args, token, oldToken)
+	}
+
+	// Inserting into DB
+	_, err := db.Exec(query, args...)
+	if err != nil {
+		db.Close()
+
+		print(err.Error())
+		global.SendError(w, "internal_error", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
 }
 
 func DebugNotifications(w http.ResponseWriter, r *http.Request) {
