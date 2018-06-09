@@ -120,7 +120,7 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 	// Format the response
 	json := make(map[string]interface{})
 	json["id"] = id
-	//userInfo.Id = id
+	userInfo.Id = id
 
 	// If client, retrieve coach data and send first message
 	if userType == 0 {
