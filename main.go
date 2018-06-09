@@ -17,7 +17,7 @@ func main() {
 	router := mux.NewRouter()
 
 	// Notification token
-	router.HandleFunc("/token/", AddOrUpdateToken).Methods("POST")
+	router.HandleFunc("/token/", AddOrUpdateToken).Methods("PUT")
 
 	// User-handling routes
 	router.HandleFunc("/checkmail/", routes.ExistingMail).Methods("POST")
