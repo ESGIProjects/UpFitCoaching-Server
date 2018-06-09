@@ -26,6 +26,9 @@ func OpenDB() (db *sql.DB) {
 	if err != nil {
 		panic(err.Error())
 	}
+
+	db.Exec("SET NAMES utf8mb4")
+
 	return db
 }
 
