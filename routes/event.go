@@ -18,7 +18,7 @@ func GetEvents(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		db.Close()
 
-		print(err.Error())
+		println(err.Error())
 		global.SendError(w, "internal_error", http.StatusInternalServerError)
 		return
 	}

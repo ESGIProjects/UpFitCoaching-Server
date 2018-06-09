@@ -7,12 +7,12 @@ import (
 
 type Info struct {
 	Id			int64	`json:"id"`
-	Type		*int	`json:"type,omitempty"`
-	Mail		string	`json:"mail,omitempty"`
-	FirstName	string	`json:"firstName,omitempty"`
-	LastName	string	`json:"lastName,omitempty"`
-	City		string	`json:"city,omitempty"`
-	PhoneNumber	string	`json:"phoneNumber,omitempty"`
+	Type		*int	`json:"type"`
+	Mail		string	`json:"mail"`
+	FirstName	string	`json:"firstName"`
+	LastName	string	`json:"lastName"`
+	City		string	`json:"city"`
+	PhoneNumber	string	`json:"phoneNumber"`
 	Address		string	`json:"address,omitempty"`
 	BirthDate	string	`json:"birthDate,omitempty"`
 	Coach		*Info	`json:"coach,omitempty"`

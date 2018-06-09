@@ -118,13 +118,16 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Format the response
-	userInfo.Id = id
+	json := make(map[string]interface{})
+	json["id"] = id
+	//userInfo.Id = id
 
 	// If client, retrieve coach data and send first message
 	if userType == 0 {
 		coach := user.Info{}
 		user.GetFromId(db, &coach, uniqueCoachId)
 		userInfo.Coach = &coach
+		json["coach"] = coach
 
 		currentTime := time.Now().Local()
 
@@ -138,7 +141,7 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 	}
 
 	db.Close()
-	global.SendJSON(w, userInfo, http.StatusCreated)
+	global.SendJSON(w, json, http.StatusCreated)
 }
 
 func SignIn(w http.ResponseWriter, r *http.Request) {
