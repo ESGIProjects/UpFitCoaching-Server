@@ -78,7 +78,7 @@ func GetThreadFromId(db *sql.DB, thread *Thread, id int64) (error) {
 	// Get last updated
 	var lastUpdated string
 	var lastUserId int64
-	row = db.QueryRow("SELECT userId, date FROM posts WHERE threadId = ? ORDER BY date LIMIT 0,1", thread.Id).Scan(&lastUserId, &lastUpdated)
+	row = db.QueryRow("SELECT userId, date FROM posts WHERE threadId = ? ORDER BY date DESC LIMIT 0,1", thread.Id).Scan(&lastUserId, &lastUpdated)
 	if row == sql.ErrNoRows {
 		return errors.New("no_last_updated")
 	}
