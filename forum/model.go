@@ -12,9 +12,11 @@ type Info struct {
 }
 
 type Thread struct {
-	Id		int64		`json:"id"`
-	Title	string		`json:"title"`
-	Forum	Info		`json:"forum"`
+	Id			int64		`json:"id"`
+	Title		string		`json:"title"`
+	Forum		Info		`json:"forum"`
+	LastUpdated	string		`json:"lastUpdated,omitempty"`
+	LastUser	*user.Info	`json:"lastUser,omitempty"`
 }
 
 type Post struct {
@@ -73,6 +75,25 @@ func GetThreadFromId(db *sql.DB, thread *Thread, id int64) (error) {
 
 	thread.Forum = forumInfo
 
+	// Get last updated
+	var lastUpdated string
+	var lastUserId int64
+	row = db.QueryRow("SELECT userId, date FROM posts WHERE threadId = ? ORDER BY date LIMIT 0,1", thread.Id).Scan(&lastUserId, &lastUpdated)
+	if row == sql.ErrNoRows {
+		return errors.New("no_last_updated")
+	}
+
+	thread.LastUpdated = lastUpdated
+
+	// Get last user
+	lastUser := user.Info{}
+	_, err = user.GetFromId(db, &lastUser, lastUserId)
+	if err != nil {
+		return errors.New("no_last_user")
+	}
+
+	thread.LastUser = &lastUser
+
 	return nil
 }
 
@@ -91,6 +112,21 @@ func GetThreadsFromForum(db *sql.DB, forumInfo Info) ([]Thread, error) {
 		thread := Thread{}
 		rows.Scan(&thread.Id, &thread.Title)
 		thread.Forum = forumInfo
+
+		// Get last updated
+		var lastUpdated string
+		var lastUserId int64
+		row := db.QueryRow("SELECT userId, date FROM posts WHERE threadId = ? ORDER BY date LIMIT 0,1", thread.Id).Scan(&lastUserId, &lastUpdated)
+		if row != sql.ErrNoRows {
+			thread.LastUpdated = lastUpdated
+		}
+
+		// Get last user
+		lastUser := user.Info{}
+		_, err = user.GetFromId(db, &lastUser, lastUserId)
+		if err == nil {
+			thread.LastUser = &lastUser
+		}
 
 		threads = append(threads, thread)
 	}
