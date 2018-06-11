@@ -76,11 +76,13 @@ func BaseNotification(token string) (*messaging.Message) {
 	}
 
 	customData := make(map[string]interface{})
+	badgeIcon := 1
 
 	notification.APNS = &messaging.APNSConfig{
 		Payload: &messaging.APNSPayload{
 			Aps: &messaging.Aps{
 				CustomData: customData,
+				Badge: &badgeIcon,
 			},
 		},
 	}

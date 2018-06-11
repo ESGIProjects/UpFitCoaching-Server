@@ -1,8 +1,8 @@
 hash: 07df411965f3daa775bd51863e5fd47be646889e61a2b79fed016cd1904de0ea
-updated: 2018-06-05T20:04:25.90431+02:00
+updated: 2018-06-11T14:17:47.972627+02:00
 imports:
 - name: cloud.google.com/go
-  version: f677f0ec093147b24e45ab8fce795a5be1877385
+  version: da2b80561ef3bd78664aa962c02b8b18f3fe98b9
   subpackages:
   - compute/metadata
   - firestore
@@ -26,9 +26,9 @@ imports:
   - messaging
   - storage
 - name: github.com/go-sql-driver/mysql
-  version: d523deb1b23d913de5bdada721a6071e71283618
+  version: a0583e0143b1624142adab07e0e97fe106d99561
 - name: github.com/golang/protobuf
-  version: 3a3da3a4e26776cc22a79ef46d5d58477532dede
+  version: 05f48f4eaf0e05663b562bab533cdd472238ce29
   subpackages:
   - proto
   - protoc-gen-go/descriptor
@@ -44,14 +44,13 @@ imports:
 - name: github.com/gorilla/context
   version: 08b5f424b9271eedf6f9f0ce86cb9396ed337a42
 - name: github.com/gorilla/mux
-  version: e0b5abaaae35242fa74372f26c24107711702a4e
+  version: 53c1911da2b537f792e7cafcb446b05ffe33b996
 - name: github.com/gorilla/websocket
-  version: c17c80cb48b806045fc338c94c849909a2e41c12
+  version: 5ed622c449da6d44c3c8329331ff47a9e5844f71
 - name: go.opencensus.io
-  version: 57c74344f14bef266fd8bae3e3b8e67920295263
+  version: 6edeb78af2d9e4f169abb223feaef35da2e45d06
   subpackages:
   - exporter/stackdriver/propagation
-  - exporterutil
   - internal
   - internal/tagencoding
   - plugin/ocgrpc
@@ -90,7 +89,7 @@ imports:
   - unicode/bidi
   - unicode/norm
 - name: google.golang.org/api
-  version: 00e3bb8d04691e25ee2fccf98c866bcb7925c3ec
+  version: ef86ce4234efee96020bde00391d6a9cfae66561
   subpackages:
   - gensupport
   - googleapi
@@ -107,7 +106,6 @@ imports:
 - name: google.golang.org/appengine
   version: b1f26356af11148e710935ed1ac8a7f5702c7612
   subpackages:
-  - cloudsql
   - internal
   - internal/app_identity
   - internal/base
@@ -120,7 +118,7 @@ imports:
   - socket
   - urlfetch
 - name: google.golang.org/genproto
-  version: 81158efcc9f219c511e4d3c0d61a0e6e49c01a24
+  version: 32ee49c4dd805befd833990acba36cb75042378c
   subpackages:
   - googleapis/api/annotations
   - googleapis/firestore/v1beta1
@@ -129,7 +127,7 @@ imports:
   - googleapis/rpc/status
   - googleapis/type/latlng
 - name: google.golang.org/grpc
-  version: 4344c204c9562c9e78083a742ee4634cd556b596
+  version: 39a411827d3b79d942aaeafab095ecf8204f1b0c
   subpackages:
   - balancer
   - balancer/base
