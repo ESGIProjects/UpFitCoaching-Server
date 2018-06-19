@@ -45,6 +45,7 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 	password := r.PostFormValue("password")
 	firstName := r.PostFormValue("firstName")
 	lastName := r.PostFormValue("lastName")
+	sex, _ := strconv.Atoi(r.PostFormValue("sex"))
 	city := r.PostFormValue("city")
 	phoneNumber := r.PostFormValue("phoneNumber")
 
@@ -73,7 +74,7 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Insert the user
-	res, err := tx.Exec("INSERT INTO users (type, mail, password, firstName, lastName, city, phoneNumber) VALUES (?, ?, ?, ?, ?, ?, ?)", userType, mail, password, firstName, lastName, city, phoneNumber)
+	res, err := tx.Exec("INSERT INTO users (type, mail, password, firstName, lastName, sex, city, phoneNumber) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", userType, mail, password, firstName, lastName, sex, city, phoneNumber)
 	if err != nil {
 		tx.Rollback()
 		db.Close()

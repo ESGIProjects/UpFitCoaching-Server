@@ -127,21 +127,16 @@ func AddEvent(w http.ResponseWriter, r *http.Request) {
 	}
 	eventInfo.Updated = eventInfo.Created
 
-	if createdBy == firstUser {
-		eventInfo.CreatedBy = eventInfo.FirstUser
-	} else {
-		eventInfo.CreatedBy = eventInfo.SecondUser
-	}
-	eventInfo.UpdatedBy = eventInfo.CreatedBy
-
-	// Get user to send notification
 	var notifiedUserId int64
 
-	if eventInfo.CreatedBy == eventInfo.FirstUser {
+	if createdBy == firstUser {
+		eventInfo.CreatedBy = eventInfo.FirstUser
 		notifiedUserId = eventInfo.SecondUser.Id
 	} else {
+		eventInfo.CreatedBy = eventInfo.SecondUser
 		notifiedUserId = eventInfo.FirstUser.Id
 	}
+	eventInfo.UpdatedBy = eventInfo.CreatedBy
 
 	// Send notifications
 	tokens, err := global.GetTokensForUserId(db, notifiedUserId)
@@ -184,31 +179,27 @@ func UpdateEvent(w http.ResponseWriter, r *http.Request) {
 
 	// Update fields from request
 	eventInfo.Name = r.PostFormValue("name")
+	eventInfo.Type, _ = strconv.Atoi(r.PostFormValue("type"))
 	eventInfo.Status, _ = strconv.Atoi(r.PostFormValue("status"))
 	eventInfo.Start = r.PostFormValue("start")
 	eventInfo.End = r.PostFormValue("end")
 	eventInfo.Updated = r.PostFormValue("updated")
 	updatedBy, _ := strconv.Atoi(r.PostFormValue("updatedBy"))
 
+	var notifiedUserId int64
+
 	if int64(updatedBy) == eventInfo.FirstUser.Id {
 		eventInfo.UpdatedBy = eventInfo.FirstUser
+		notifiedUserId = eventInfo.SecondUser.Id
 	} else {
 		eventInfo.UpdatedBy = eventInfo.SecondUser
+		notifiedUserId = eventInfo.FirstUser.Id
 	}
 
 	// TODO - Change status if needed
 
 	// Update the event
 	event.Update(db, eventInfo)
-
-	// Get user to send notification
-	var notifiedUserId int64
-
-	if eventInfo.UpdatedBy == eventInfo.FirstUser {
-		notifiedUserId = eventInfo.SecondUser.Id
-	} else {
-		notifiedUserId = eventInfo.FirstUser.Id
-	}
 
 	// Send notifications
 	tokens, err := global.GetTokensForUserId(db, notifiedUserId)

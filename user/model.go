@@ -11,6 +11,7 @@ type Info struct {
 	Mail		string	`json:"mail"`
 	FirstName	string	`json:"firstName"`
 	LastName	string	`json:"lastName"`
+	Sex			*int	`json:"sex"`
 	City		string	`json:"city"`
 	PhoneNumber	string	`json:"phoneNumber"`
 	Address		string	`json:"address,omitempty"`
@@ -24,7 +25,7 @@ func get(db *sql.DB, query *sql.Row, userInfo *Info) (string, error) {
 	var coachId sql.NullInt64
 
 	// Make the query
-	row := query.Scan(&userInfo.Id, &userInfo.Type, &userInfo.Mail, &password, &userInfo.FirstName, &userInfo.LastName, &userInfo.City, &userInfo.PhoneNumber, &address, &birthDate, &coachId)
+	row := query.Scan(&userInfo.Id, &userInfo.Type, &userInfo.Mail, &password, &userInfo.FirstName, &userInfo.LastName, &userInfo.Sex, &userInfo.City, &userInfo.PhoneNumber, &address, &birthDate, &coachId)
 
 	// Does the user exist?
 	if row == sql.ErrNoRows {
