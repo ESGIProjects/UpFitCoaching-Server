@@ -13,6 +13,7 @@ import (
 
 func ExistingMail(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	db := global.OpenDB()
 
 	// Get field from request
@@ -35,6 +36,7 @@ const uniqueCoachId = 15
 
 func SignUp(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	db := global.OpenDB()
 
 	// Get fields from request
@@ -146,6 +148,7 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 
 func SignIn(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	db := global.OpenDB()
 
 	userInfo := user.Info{}
@@ -171,6 +174,7 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 
 func UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	db := global.OpenDB()
 	defer db.Close()
 
@@ -263,6 +267,7 @@ func UpdateProfile(w http.ResponseWriter, r *http.Request) {
 
 func Forgot(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	db := global.OpenDB()
 
 	// Check if the user exists

@@ -9,6 +9,7 @@ import (
 
 func GetForums(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	db := global.OpenDB()
 	defer db.Close()
 
@@ -27,6 +28,7 @@ func GetForums(w http.ResponseWriter, r *http.Request) {
 
 func GetThreads(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	db := global.OpenDB()
 	defer db.Close()
 
@@ -66,6 +68,7 @@ func GetThreads(w http.ResponseWriter, r *http.Request) {
 
 func GetThread(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	db := global.OpenDB()
 	defer db.Close()
 
@@ -105,6 +108,7 @@ func GetThread(w http.ResponseWriter, r *http.Request) {
 
 func CreateThread(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	db := global.OpenDB()
 	defer db.Close()
 
@@ -164,6 +168,7 @@ func CreateThread(w http.ResponseWriter, r *http.Request) {
 
 func AddPost(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	db := global.OpenDB()
 	defer db.Close()
 

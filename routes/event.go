@@ -10,6 +10,7 @@ import (
 
 func GetEvents(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	db := global.OpenDB()
 	defer db.Close()
 
@@ -64,6 +65,7 @@ func GetEvents(w http.ResponseWriter, r *http.Request) {
 
 func AddEvent(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	db := global.OpenDB()
 	defer db.Close()
 
@@ -136,6 +138,7 @@ func AddEvent(w http.ResponseWriter, r *http.Request) {
 
 func UpdateEvent(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	db := global.OpenDB()
 	defer db.Close()
 
