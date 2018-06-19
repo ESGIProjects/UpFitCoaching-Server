@@ -219,3 +219,27 @@ func UpdateEvent(w http.ResponseWriter, r *http.Request) {
 
 	global.SendJSON(w, eventInfo, http.StatusOK)
 }
+
+func CancelEvent(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	db := global.OpenDB()
+	defer db.Close()
+
+	// Get event ID from request
+	eventId, _ := strconv.Atoi(r.PostFormValue("eventId"))
+
+	// Delete the event
+	_, err := db.Exec("DELETE FROM events WHERE id = ?", eventId)
+	if err != nil {
+		db.Close()
+
+		print(err.Error())
+		global.SendError(w, "internal_error", http.StatusInternalServerError)
+		return
+	}
+
+	// TODO - Notification other user
+
+	w.WriteHeader(http.StatusOK)
+}

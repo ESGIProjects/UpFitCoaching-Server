@@ -35,6 +35,7 @@ func main() {
 	router.HandleFunc("/events/", routes.GetEvents).Methods("GET")
 	router.HandleFunc("/events/", routes.AddEvent).Methods("POST")
 	router.HandleFunc("/events/", routes.UpdateEvent).Methods("PUT")
+	router.HandleFunc("/events/", routes.CancelEvent).Methods("DELETE")
 
 	// Forum-handling routes
 	router.HandleFunc("/forums/", routes.GetForums).Methods("GET")
