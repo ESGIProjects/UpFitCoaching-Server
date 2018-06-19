@@ -7,6 +7,7 @@ import (
 	"firebase.google.com/go"
 	"context"
 	"server/message"
+	"server/event"
 )
 
 func GetTokens(db *sql.DB, userIds ...int64) (map[int64][]string) {
@@ -105,6 +106,21 @@ func MessageNotification(token string, message message.Info) (*messaging.Message
 	notification.Notification.Title = message.Sender.FirstName + " " + message.Sender.LastName
 	notification.Notification.Body = message.Content
 	notification.APNS.Payload.Aps.CustomData["type"] = "message"
+
+	return notification
+}
+
+func EventNotification(token string, event event.Info) (*messaging.Message) {
+	notification := BaseNotification(token)
+
+	notification.Notification.Title = event.Name
+	notification.APNS.Payload.Aps.CustomData["type"] = "event"
+
+	if event.Created == event.Updated {
+		notification.Notification.Body = "Nouvel événement inséré dans votre calendrier."
+	} else {
+		notification.Notification.Body = "Événement modifié dans votre calendrier."
+	}
 
 	return notification
 }

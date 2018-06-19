@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"server/user"
 	"server/event"
+	"firebase.google.com/go/messaging"
 )
 
 func GetEvents(w http.ResponseWriter, r *http.Request) {
@@ -133,6 +134,31 @@ func AddEvent(w http.ResponseWriter, r *http.Request) {
 	}
 	eventInfo.UpdatedBy = eventInfo.CreatedBy
 
+	// Get user to send notification
+	var notifiedUserId int64
+
+	if eventInfo.CreatedBy == eventInfo.FirstUser {
+		notifiedUserId = eventInfo.SecondUser.Id
+	} else {
+		notifiedUserId = eventInfo.FirstUser.Id
+	}
+
+	// Send notifications
+	tokens, err := global.GetTokensForUserId(db, notifiedUserId)
+	if err != nil {
+		db.Close()
+		print(err.Error())
+		return
+	}
+
+	notifications := make([]*messaging.Message, 0)
+
+	for _, token := range tokens {
+		notification := global.EventNotification(token, eventInfo)
+		notifications = append(notifications, notification)
+	}
+	global.SendNotifications(notifications...)
+
 	global.SendJSON(w, eventInfo, http.StatusCreated)
 }
 
@@ -175,7 +201,30 @@ func UpdateEvent(w http.ResponseWriter, r *http.Request) {
 	// Update the event
 	event.Update(db, eventInfo)
 
-	// TODO - Notification with status change
+	// Get user to send notification
+	var notifiedUserId int64
+
+	if eventInfo.UpdatedBy == eventInfo.FirstUser {
+		notifiedUserId = eventInfo.SecondUser.Id
+	} else {
+		notifiedUserId = eventInfo.FirstUser.Id
+	}
+
+	// Send notifications
+	tokens, err := global.GetTokensForUserId(db, notifiedUserId)
+	if err != nil {
+		db.Close()
+		print(err.Error())
+		return
+	}
+
+	notifications := make([]*messaging.Message, 0)
+
+	for _, token := range tokens {
+		notification := global.EventNotification(token, eventInfo)
+		notifications = append(notifications, notification)
+	}
+	global.SendNotifications(notifications...)
 
 	global.SendJSON(w, eventInfo, http.StatusOK)
 }
