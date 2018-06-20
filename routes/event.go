@@ -227,10 +227,21 @@ func CancelEvent(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 
 	// Get event ID from request
-	eventId, _ := strconv.Atoi(r.PostFormValue("eventId"))
+	eventId, _ := strconv.Atoi(r.URL.Query().Get("eventId"))
+
+	// Check if event exists
+	eventInfo := event.Info{}
+	err := event.GetFromId(db, &eventInfo, int64(eventId))
+	if err != nil {
+		db.Close()
+
+		print(err.Error())
+		global.SendError(w, "event_not_found", http.StatusNotModified)
+		return
+	}
 
 	// Delete the event
-	_, err := db.Exec("DELETE FROM events WHERE id = ?", eventId)
+	_, err = db.Exec("DELETE FROM events WHERE id = ?", eventId)
 	if err != nil {
 		db.Close()
 
