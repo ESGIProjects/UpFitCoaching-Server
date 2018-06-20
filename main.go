@@ -44,6 +44,10 @@ func main() {
 	router.HandleFunc("/thread/", routes.CreateThread).Methods("POST")
 	router.HandleFunc("/post/", routes.AddPost).Methods("POST")
 
+	// Follow Up-handling routes
+	router.HandleFunc("/appraisals/", routes.GetLastAppraisal).Methods("GET")
+	router.HandleFunc("/measurements/", routes.GetMeasurements).Methods("GET")
+
 	// Debug routes
 	router.HandleFunc("/notification", DebugNotifications).Methods("GET")
 

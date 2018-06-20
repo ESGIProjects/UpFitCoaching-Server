@@ -1,6 +1,9 @@
 package followUp
 
-import "server/user"
+import (
+	"server/user"
+	"database/sql"
+)
 
 type Appraisal struct {
 	Id					int64		`json:"id"`
@@ -40,4 +43,52 @@ type Test struct {
 	HitFootFlexibility			*int		`json:"hitFootFlexibility"`
 	ClosedFistGroundFlexibility	*int		`json:"closedFistGroundFlexibility"`
 	HandFlatGroundFlexibility	*int		`json:"handFlatGroundFlexibility"`
+}
+
+func GetFromUserId(db *sql.DB, userId int64) (*Appraisal) {
+	query := "SELECT * FROM appraisals WHERE userId = ?"
+
+	appraisal := Appraisal{}
+	var dbUserId int64
+
+	row := db.QueryRow(query, userId).Scan(&appraisal.Id, &dbUserId, &appraisal.Date, &appraisal.Goal, &appraisal.SessionsByWeek, &appraisal.Contraindication, &appraisal.SportAntecedents, &appraisal.HelpNeeded, &appraisal.HasNutritionist, &appraisal.Comments)
+	if row == sql.ErrNoRows {
+		return nil
+	}
+
+	// Get user
+	userInfo := user.Info{}
+	_, err := user.GetFromId(db, &userInfo, userId)
+	if err == nil {
+		appraisal.User = userInfo
+	}
+
+	return &appraisal
+}
+
+func GetAllMeasurements(db *sql.DB, userId int64) ([]Measurements, error) {
+	query := `SELECT * FROM measurements WHERE userId = ?`
+
+	rows, err := db.Query(query, userId)
+	if err != nil {
+		return nil, err
+	}
+
+	var userInfo user.Info
+	_, err = user.GetFromId(db, &userInfo, userId)
+	if err != nil {
+		return nil, err
+	}
+
+	measurements := make([]Measurements, 0)
+
+	for rows.Next() {
+		measurement := Measurements{}
+		rows.Scan(&measurement.Id, &userId, &measurement.Date, &measurement.Weight, &measurement.Height, &measurement.HipCircumference, &measurement.WaistCircumference, &measurement.ThighCircumference, &measurement.ArmCircumference)
+		measurement.User = userInfo
+
+		measurements = append(measurements, measurement)
+	}
+
+	return measurements, nil
 }
