@@ -46,8 +46,11 @@ func main() {
 
 	// Follow Up-handling routes
 	router.HandleFunc("/appraisals/", routes.GetLastAppraisal).Methods("GET")
+	router.HandleFunc("/appraisals/", routes.CreateAppraisal).Methods("POST")
 	router.HandleFunc("/measurements/", routes.GetMeasurements).Methods("GET")
+	router.HandleFunc("/measurements/", routes.CreateMeasurements).Methods("POST")
 	router.HandleFunc("/tests/", routes.GetTests).Methods("GET")
+	router.HandleFunc("/tests/", routes.CreateTest).Methods("POST")
 
 	// Debug routes
 	router.HandleFunc("/notification", DebugNotifications).Methods("GET")

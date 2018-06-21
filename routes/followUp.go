@@ -87,6 +87,133 @@ func GetTests(w http.ResponseWriter, r *http.Request) {
 	global.SendJSON(w, tests, http.StatusOK)
 }
 
-func AddTest(w http.ResponseWriter, r *http.Request) {
+func CreateAppraisal(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	db := global.OpenDB()
+	defer db.Close()
 
+	// Get fields from request
+	userId, _ := strconv.Atoi(r.PostFormValue("userId"))
+	date := r.PostFormValue("date")
+	goal := r.PostFormValue("goal")
+	sessionsByWeek, _ := strconv.Atoi(r.PostFormValue("sessionsByWeek"))
+	contraindication := r.PostFormValue("contraindication")
+	sportAntecedents := r.PostFormValue("sportAntecedents")
+	helpNeeded, _ := strconv.Atoi(r.PostFormValue("helpNeeded"))
+	hasNutritionist, _ := strconv.Atoi(r.PostFormValue("hasNutritionist"))
+	comments := r.PostFormValue("comments")
+
+	// Inserting appraisal into DB
+	res, err := db.Exec("INSERT INTO appraisals (userId, date, goal, sessionsByWeek, contraindication, sportAntecedents, helpNeeded, hasNutritionist, comments) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", userId, date, goal, sessionsByWeek, contraindication, sportAntecedents, helpNeeded, hasNutritionist, comments)
+	if err != nil {
+		db.Close()
+
+		print(err.Error())
+		global.SendError(w, "internal_error", http.StatusInternalServerError)
+		return
+	}
+
+	// Get the new appraisal ID
+	appraisalId, err := res.LastInsertId()
+	if err != nil {
+		db.Close()
+
+		print(err.Error())
+		global.SendError(w, "internal_error", http.StatusInternalServerError)
+		return
+	}
+
+	json := make(map[string]int64)
+	json["id"] = appraisalId
+
+	global.SendJSON(w, json, http.StatusCreated)
+}
+
+func CreateMeasurements(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	db := global.OpenDB()
+	defer db.Close()
+
+	// Get fields from request
+	userId, _ := strconv.Atoi(r.PostFormValue("userId"))
+	date := r.PostFormValue("date")
+	weight, _ := strconv.Atoi(r.PostFormValue("weight"))
+	height, _ := strconv.Atoi(r.PostFormValue("height"))
+	hipCircumference, _ := strconv.Atoi(r.PostFormValue("hipCircumference"))
+	waistCircumference, _ := strconv.Atoi(r.PostFormValue("waistCircumference"))
+	thighCircumference, _ := strconv.Atoi(r.PostFormValue("thighCircumference"))
+	armCircumference, _ := strconv.Atoi(r.PostFormValue("armCircumference"))
+
+	// Inserting measurements into DB
+	res, err := db.Exec("INSERT INTO measurements (userId, date, weight, height, hipCircumference, waistCircumference, thighCircumference, armCircumference) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", userId, date, weight, height, hipCircumference, waistCircumference, thighCircumference, armCircumference)
+	if err != nil {
+		db.Close()
+
+		print(err.Error())
+		global.SendError(w, "internal_error", http.StatusInternalServerError)
+		return
+	}
+
+	// Get the new measurements ID
+	measurementsId, err := res.LastInsertId()
+	if err != nil {
+		db.Close()
+
+		print(err.Error())
+		global.SendError(w, "internal_error", http.StatusInternalServerError)
+		return
+	}
+
+	json := make(map[string]int64)
+	json["id"] = measurementsId
+
+	global.SendJSON(w, json, http.StatusCreated)
+}
+
+func CreateTest(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	db := global.OpenDB()
+	defer db.Close()
+
+	// Get fields from request
+	userId, _ := strconv.Atoi(r.PostFormValue("userId"))
+	date := r.PostFormValue("date")
+
+	warmUp, _ := strconv.ParseFloat(r.PostFormValue("warmUp"), 64)
+	startSpeed, _ := strconv.ParseFloat(r.PostFormValue("startSpeed"), 64)
+	increase, _ := strconv.ParseFloat(r.PostFormValue("increase"), 64)
+	frequency, _ := strconv.ParseFloat(r.PostFormValue("frequency"), 64)
+	kneeFlexibility, _ := strconv.Atoi(r.PostFormValue("kneeFlexibility"))
+	shinFlexibility, _ := strconv.Atoi(r.PostFormValue("shinFlexibility"))
+	hitFootFlexibility, _ := strconv.Atoi(r.PostFormValue("hitFootFlexibility"))
+	closedFistGroundFlexibility, _ := strconv.Atoi(r.PostFormValue("closedFistGroundFlexibility"))
+	handFlatGroundFlexibility, _ := strconv.Atoi(r.PostFormValue("handFlatGroundFlexibility"))
+
+	// Inserting test into DB
+	res, err := db.Exec("INSERT INTO tests (userId, date, warmUp, startSpeed, increase, frequency, kneeFlexibility, shinFlexibility, hitFootFlexibility, closedFistGroundFlexibility, handFlatGroundFlexibility) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", userId, date, warmUp, startSpeed, increase, frequency, kneeFlexibility, shinFlexibility, hitFootFlexibility, closedFistGroundFlexibility, handFlatGroundFlexibility)
+	if err != nil {
+		db.Close()
+
+		print(err.Error())
+		global.SendError(w, "internal_error", http.StatusInternalServerError)
+		return
+	}
+
+	// Get the new test ID
+	testId, err := res.LastInsertId()
+	if err != nil {
+		db.Close()
+
+		print(err.Error())
+		global.SendError(w, "internal_error", http.StatusInternalServerError)
+		return
+	}
+
+	json := make(map[string]int64)
+	json["id"] = testId
+
+	global.SendJSON(w, json, http.StatusCreated)
 }
