@@ -66,7 +66,7 @@ func GetFromUserId(db *sql.DB, userId int64) (*Appraisal) {
 	return &appraisal
 }
 
-func GetAllMeasurements(db *sql.DB, userId int64) ([]Measurements, error) {
+func GetMeasurements(db *sql.DB, userId int64) ([]Measurements, error) {
 	query := `SELECT * FROM measurements WHERE userId = ?`
 
 	rows, err := db.Query(query, userId)
@@ -91,4 +91,31 @@ func GetAllMeasurements(db *sql.DB, userId int64) ([]Measurements, error) {
 	}
 
 	return measurements, nil
+}
+
+func GetTests(db *sql.DB, userId int64) ([]Test, error) {
+	query := `SELECT * FROM tests WHERE userId = ?`
+
+	rows, err := db.Query(query, userId)
+	if err != nil {
+		return nil, err
+	}
+
+	var userInfo user.Info
+	_, err = user.GetFromId(db, &userInfo, userId)
+	if err != nil {
+		return nil, err
+	}
+
+	tests := make([]Test, 0)
+
+	for rows.Next() {
+		test := Test{}
+		rows.Scan(&test.Id, &userId, &test.Date, &test.WarmUp, &test.StartSpeed, &test.Increase, &test.Frequency, &test.KneeFlexibility, &test.ShinFlexibility, &test.HitFootFlexibility, &test.ClosedFistGroundFlexibility, &test.HandFlatGroundFlexibility)
+		test.User = userInfo
+
+		tests = append(tests, test)
+	}
+
+	return tests, nil
 }

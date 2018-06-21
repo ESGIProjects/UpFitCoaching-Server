@@ -38,22 +38,55 @@ func GetMeasurements(w http.ResponseWriter, r *http.Request) {
 	// Get userId from request
 	userId, err := strconv.Atoi(r.URL.Query().Get("userId"))
 	if err != nil {
-		print(err.Error())
+		println(err.Error())
 		db.Close()
-		global.SendError(w, "parameter_error", http.StatusBadRequest)
 
+		global.SendError(w, "parameter_error", http.StatusBadRequest)
 		return
 	}
 
 	// Retrieve measurements from user
-	measurements, err := followUp.GetAllMeasurements(db, int64(userId))
+	measurements, err := followUp.GetMeasurements(db, int64(userId))
 	if err != nil {
-		print(err.Error())
+		println(err.Error())
 		db.Close()
-		global.SendError(w, "internal_error", http.StatusInternalServerError)
 
+		global.SendError(w, "internal_error", http.StatusInternalServerError)
 		return
 	}
 
 	global.SendJSON(w, measurements, http.StatusOK)
+}
+
+func GetTests(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	db := global.OpenDB()
+	defer db.Close()
+
+	// Get userId from request
+	userId, err := strconv.Atoi(r.URL.Query().Get("userId"))
+	if err != nil {
+		println(err.Error())
+		db.Close()
+
+		global.SendError(w, "parameter_error", http.StatusBadRequest)
+		return
+	}
+
+	// Retrieve tests for user
+	tests, err := followUp.GetTests(db, int64(userId))
+	if err != nil {
+		println(err.Error())
+		db.Close()
+
+		global.SendError(w, "internal_error", http.StatusInternalServerError)
+		return
+	}
+
+	global.SendJSON(w, tests, http.StatusOK)
+}
+
+func AddTest(w http.ResponseWriter, r *http.Request) {
+
 }
