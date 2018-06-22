@@ -100,8 +100,8 @@ func CreateAppraisal(w http.ResponseWriter, r *http.Request) {
 	sessionsByWeek, _ := strconv.Atoi(r.PostFormValue("sessionsByWeek"))
 	contraindication := r.PostFormValue("contraindication")
 	sportAntecedents := r.PostFormValue("sportAntecedents")
-	helpNeeded, _ := strconv.Atoi(r.PostFormValue("helpNeeded"))
-	hasNutritionist, _ := strconv.Atoi(r.PostFormValue("hasNutritionist"))
+	helpNeeded, _ := strconv.ParseBool(r.PostFormValue("helpNeeded"))
+	hasNutritionist, _ := strconv.ParseBool(r.PostFormValue("hasNutritionist"))
 	comments := r.PostFormValue("comments")
 
 	// Inserting appraisal into DB

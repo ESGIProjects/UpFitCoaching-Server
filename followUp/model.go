@@ -13,8 +13,8 @@ type Appraisal struct {
 	SessionsByWeek		*int		`json:"sessionsByWeek"`
 	Contraindication	string		`json:"contraindication"`
 	SportAntecedents	string		`json:"sportAntecedents"`
-	HelpNeeded			*int		`json:"helpNeeded"`
-	HasNutritionist		*int		`json:"hasNutritionist"`
+	HelpNeeded			bool		`json:"helpNeeded"`
+	HasNutritionist		bool		`json:"hasNutritionist"`
 	Comments			string		`json:"comments"`
 }
 
