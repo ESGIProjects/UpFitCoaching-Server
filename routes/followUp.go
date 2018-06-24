@@ -139,12 +139,12 @@ func CreateMeasurements(w http.ResponseWriter, r *http.Request) {
 	// Get fields from request
 	userId, _ := strconv.Atoi(r.PostFormValue("userId"))
 	date := r.PostFormValue("date")
-	weight, _ := strconv.Atoi(r.PostFormValue("weight"))
-	height, _ := strconv.Atoi(r.PostFormValue("height"))
-	hipCircumference, _ := strconv.Atoi(r.PostFormValue("hipCircumference"))
-	waistCircumference, _ := strconv.Atoi(r.PostFormValue("waistCircumference"))
-	thighCircumference, _ := strconv.Atoi(r.PostFormValue("thighCircumference"))
-	armCircumference, _ := strconv.Atoi(r.PostFormValue("armCircumference"))
+	weight, _ := strconv.ParseFloat(r.PostFormValue("weight"), 64)
+	height, _ := strconv.ParseFloat(r.PostFormValue("height"), 64)
+	hipCircumference, _ := strconv.ParseFloat(r.PostFormValue("hipCircumference"), 64)
+	waistCircumference, _ := strconv.ParseFloat(r.PostFormValue("waistCircumference"), 64)
+	thighCircumference, _ := strconv.ParseFloat(r.PostFormValue("thighCircumference"), 64)
+	armCircumference, _ := strconv.ParseFloat(r.PostFormValue("armCircumference"), 64)
 
 	// Inserting measurements into DB
 	res, err := db.Exec("INSERT INTO measurements (userId, date, weight, height, hipCircumference, waistCircumference, thighCircumference, armCircumference) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", userId, date, weight, height, hipCircumference, waistCircumference, thighCircumference, armCircumference)
