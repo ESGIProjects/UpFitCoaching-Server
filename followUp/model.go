@@ -22,12 +22,12 @@ type Measurements struct {
 	Id					int64		`json:"id"`
 	User				user.Info	`json:"user"`
 	Date				string		`json:"date"`
-	Weight				*int		`json:"weight"`
-	Height				*int		`json:"height"`
-	HipCircumference	*int		`json:"hipCircumference"`
-	WaistCircumference	*int		`json:"waistCircumference"`
-	ThighCircumference	*int		`json:"thighCircumference"`
-	ArmCircumference	*int		`json:"armCircumference"`
+	Weight				*float64	`json:"weight"`
+	Height				*float64	`json:"height"`
+	HipCircumference	*float64	`json:"hipCircumference"`
+	WaistCircumference	*float64	`json:"waistCircumference"`
+	ThighCircumference	*float64	`json:"thighCircumference"`
+	ArmCircumference	*float64	`json:"armCircumference"`
 }
 
 type Test struct {
