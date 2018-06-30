@@ -52,6 +52,9 @@ func main() {
 	router.HandleFunc("/tests/", routes.GetTests).Methods("GET")
 	router.HandleFunc("/tests/", routes.CreateTest).Methods("POST")
 
+	// Prescriptions-handling routes
+	router.HandleFunc("/prescriptions/", routes.GetPrescriptions).Methods("GET")
+
 	// Debug routes
 	router.HandleFunc("/notification", DebugNotifications).Methods("GET")
 
