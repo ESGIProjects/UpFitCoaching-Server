@@ -54,6 +54,7 @@ func main() {
 
 	// Prescriptions-handling routes
 	router.HandleFunc("/prescriptions/", routes.GetPrescriptions).Methods("GET")
+	router.HandleFunc("/prescriptions/", routes.CreatePrescription).Methods("POST")
 
 	// Debug routes
 	router.HandleFunc("/notification", DebugNotifications).Methods("GET")
