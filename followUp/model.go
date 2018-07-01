@@ -46,7 +46,7 @@ type Test struct {
 }
 
 func GetFromUserId(db *sql.DB, userId int64) (*Appraisal) {
-	query := "SELECT * FROM appraisals WHERE userId = ?"
+	query := "SELECT * FROM appraisals WHERE userId = ? ORDER BY date DESC LIMIT 0, 1"
 
 	appraisal := Appraisal{}
 	var dbUserId int64
