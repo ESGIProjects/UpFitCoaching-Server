@@ -18,6 +18,8 @@ func main() {
 	router := mux.NewRouter()
 
 	loginRouter := router.PathPrefix("/login").Subrouter()
+	loginRouter.HandleFunc("/refreshToken/", auth.RefreshToken).Methods("GET")
+
 	protectedRouter := router.PathPrefix("/").Subrouter()
 
 	protectedRouter.Use(auth.VerifyToken)
