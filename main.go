@@ -10,51 +10,57 @@ import (
 	"firebase.google.com/go/messaging"
 	"server/global"
 	"strconv"
+	"server/auth"
 )
 
 func main() {
 	// Creating router
 	router := mux.NewRouter()
 
+	loginRouter := router.PathPrefix("/login").Subrouter()
+	protectedRouter := router.PathPrefix("/").Subrouter()
+
+	protectedRouter.Use(auth.VerifyToken)
+
 	// Notification token
-	router.HandleFunc("/token/", AddOrUpdateToken).Methods("PUT")
+	protectedRouter.HandleFunc("/token/", AddOrUpdateToken).Methods("PUT")
 
 	// User-handling routes
-	router.HandleFunc("/checkmail/", routes.ExistingMail).Methods("POST")
-	router.HandleFunc("/signup/", routes.SignUp).Methods("POST")
-	router.HandleFunc("/signin/", routes.SignIn).Methods("POST")
-	router.HandleFunc("/forgot/", routes.Forgot).Methods("POST")
-	router.HandleFunc("/users/", routes.UpdateProfile).Methods("PUT")
+	loginRouter.HandleFunc("/checkmail/", routes.ExistingMail).Methods("POST")
+	loginRouter.HandleFunc("/signup/", routes.SignUp).Methods("POST")
+	loginRouter.HandleFunc("/signin/", routes.SignIn).Methods("POST")
+	loginRouter.HandleFunc("/forgot/", routes.Forgot).Methods("POST")
+	protectedRouter.HandleFunc("/users/", routes.UpdateProfile).Methods("PUT")
 
 	// Message-handling routes
-	router.HandleFunc("/messages/", routes.GetMessages).Methods("GET")
-	router.HandleFunc("/ws", handleConnections)
+	protectedRouter.HandleFunc("/messages/", routes.GetMessages).Methods("GET")
+	protectedRouter.HandleFunc("/ws", handleConnections)
 	go handleMessages()
 
 	// Event-handling routes
-	router.HandleFunc("/events/", routes.GetEvents).Methods("GET")
-	router.HandleFunc("/events/", routes.AddEvent).Methods("POST")
-	router.HandleFunc("/events/", routes.UpdateEvent).Methods("PUT")
-	router.HandleFunc("/events/", routes.CancelEvent).Methods("DELETE")
+	protectedRouter.HandleFunc("/events/", routes.GetEvents).Methods("GET")
+	protectedRouter.HandleFunc("/events/", routes.AddEvent).Methods("POST")
+	protectedRouter.HandleFunc("/events/", routes.UpdateEvent).Methods("PUT")
+	protectedRouter.HandleFunc("/events/", routes.CancelEvent).Methods("DELETE")
 
 	// Forum-handling routes
-	router.HandleFunc("/forums/", routes.GetForums).Methods("GET")
-	router.HandleFunc("/threads/", routes.GetThreads).Methods("GET")
-	router.HandleFunc("/thread/", routes.GetThread).Methods("GET")
-	router.HandleFunc("/thread/", routes.CreateThread).Methods("POST")
-	router.HandleFunc("/post/", routes.AddPost).Methods("POST")
+	protectedRouter.HandleFunc("/forums/", routes.GetForums).Methods("GET")
+	protectedRouter.HandleFunc("/threads/", routes.GetThreads).Methods("GET")
+	protectedRouter.HandleFunc("/thread/", routes.GetThread).Methods("GET")
+	protectedRouter.HandleFunc("/thread/", routes.CreateThread).Methods("POST")
+	protectedRouter.HandleFunc("/post/", routes.AddPost).Methods("POST")
 
 	// Follow Up-handling routes
-	router.HandleFunc("/appraisals/", routes.GetLastAppraisal).Methods("GET")
-	router.HandleFunc("/appraisals/", routes.CreateAppraisal).Methods("POST")
-	router.HandleFunc("/measurements/", routes.GetMeasurements).Methods("GET")
-	router.HandleFunc("/measurements/", routes.CreateMeasurements).Methods("POST")
-	router.HandleFunc("/tests/", routes.GetTests).Methods("GET")
-	router.HandleFunc("/tests/", routes.CreateTest).Methods("POST")
+	protectedRouter.HandleFunc("/appraisals/", routes.GetLastAppraisal).Methods("GET")
+	protectedRouter.HandleFunc("/appraisals/", routes.CreateAppraisal).Methods("POST")
+	protectedRouter.HandleFunc("/measurements/", routes.GetMeasurements).Methods("GET")
+	protectedRouter.HandleFunc("/measurements/", routes.CreateMeasurements).Methods("POST")
+	protectedRouter.HandleFunc("/tests/", routes.GetTests).Methods("GET")
+	protectedRouter.HandleFunc("/tests/", routes.CreateTest).Methods("POST")
 
 	// Prescriptions-handling routes
-	router.HandleFunc("/prescriptions/", routes.GetPrescriptions).Methods("GET")
-	router.HandleFunc("/prescriptions/", routes.CreatePrescription).Methods("POST")
+	protectedRouter.HandleFunc("/prescriptions/", routes.GetPrescriptions).Methods("GET")
+	protectedRouter.HandleFunc("/prescriptions/", routes.CreatePrescription).Methods("POST")
 
 	// Debug routes
 	router.HandleFunc("/notification", DebugNotifications).Methods("GET")

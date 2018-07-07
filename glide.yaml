@@ -4,3 +4,4 @@ import:
 - package: github.com/gorilla/mux
 - package: github.com/gorilla/websocket
 - package: firebase.google.com/go
+- package: github.com/dgrijalva/jwt-go

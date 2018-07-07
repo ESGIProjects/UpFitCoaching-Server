@@ -9,7 +9,10 @@ import (
 	"database/sql"
 	"server/message"
 	"time"
+	"server/auth"
 )
+
+const uniqueCoachId = 15
 
 func ExistingMail(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
@@ -31,8 +34,6 @@ func ExistingMail(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusFound) // 302 plutôt que 409 ?
 	}
 }
-
-const uniqueCoachId = 15
 
 func SignUp(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
@@ -120,9 +121,20 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Generate auth token
+	token, err := auth.CreateToken(id)
+	if err != nil {
+		db.Close()
+
+		println(err.Error())
+		global.SendError(w, "internal_error", http.StatusInternalServerError)
+		return
+	}
+
 	// Format the response
 	json := make(map[string]interface{})
 	json["id"] = id
+	json["token"] = token
 	userInfo.Id = id
 
 	// If client, retrieve coach data and send first message
@@ -170,7 +182,21 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	global.SendJSON(w, userInfo, http.StatusOK)
+	// Generate auth token
+	token, err := auth.CreateToken(userInfo.Id)
+	if err != nil {
+		db.Close()
+
+		println(err.Error())
+		global.SendError(w, "internal_error", http.StatusInternalServerError)
+		return
+	}
+
+	json := make(map[string]interface{})
+	json["token"] = token
+	json["user"] = userInfo
+
+	global.SendJSON(w, json, http.StatusOK)
 }
 
 func UpdateProfile(w http.ResponseWriter, r *http.Request) {

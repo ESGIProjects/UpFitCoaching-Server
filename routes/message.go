@@ -15,6 +15,7 @@ func GetMessages(w http.ResponseWriter, r *http.Request) {
 
 	// Get field from request
 	userId, err := strconv.Atoi(r.URL.Query().Get("userId"))
+
 	if err != nil {
 		db.Close()
 
