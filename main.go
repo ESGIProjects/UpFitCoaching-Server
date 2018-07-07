@@ -17,55 +17,45 @@ func main() {
 	// Creating router
 	router := mux.NewRouter()
 
+	// Making unprotected subrouter
 	loginRouter := router.PathPrefix("/login").Subrouter()
-	loginRouter.HandleFunc("/refreshToken/", auth.RefreshToken).Methods("GET")
 
-	protectedRouter := router.PathPrefix("/").Subrouter()
-
-	protectedRouter.Use(auth.VerifyToken)
-
-	// Notification token
-	protectedRouter.HandleFunc("/token/", AddOrUpdateToken).Methods("PUT")
-
-	// User-handling routes
 	loginRouter.HandleFunc("/checkmail/", routes.ExistingMail).Methods("POST")
 	loginRouter.HandleFunc("/signup/", routes.SignUp).Methods("POST")
 	loginRouter.HandleFunc("/signin/", routes.SignIn).Methods("POST")
 	loginRouter.HandleFunc("/forgot/", routes.Forgot).Methods("POST")
-	protectedRouter.HandleFunc("/users/", routes.UpdateProfile).Methods("PUT")
+	loginRouter.HandleFunc("/refreshToken/", auth.RefreshToken).Methods("GET")
 
-	// Message-handling routes
+	// Making protected router with token middleware
+	protectedRouter := router.PathPrefix("/").Subrouter()
+	protectedRouter.Use(auth.VerifyToken)
+
+	protectedRouter.HandleFunc("/token/", AddOrUpdateToken).Methods("PUT")
+	protectedRouter.HandleFunc("/users/", routes.UpdateProfile).Methods("PUT")
 	protectedRouter.HandleFunc("/messages/", routes.GetMessages).Methods("GET")
 	protectedRouter.HandleFunc("/ws", handleConnections)
-	go handleMessages()
-
-	// Event-handling routes
 	protectedRouter.HandleFunc("/events/", routes.GetEvents).Methods("GET")
 	protectedRouter.HandleFunc("/events/", routes.AddEvent).Methods("POST")
 	protectedRouter.HandleFunc("/events/", routes.UpdateEvent).Methods("PUT")
 	protectedRouter.HandleFunc("/events/", routes.CancelEvent).Methods("DELETE")
-
-	// Forum-handling routes
 	protectedRouter.HandleFunc("/forums/", routes.GetForums).Methods("GET")
 	protectedRouter.HandleFunc("/threads/", routes.GetThreads).Methods("GET")
 	protectedRouter.HandleFunc("/thread/", routes.GetThread).Methods("GET")
 	protectedRouter.HandleFunc("/thread/", routes.CreateThread).Methods("POST")
 	protectedRouter.HandleFunc("/post/", routes.AddPost).Methods("POST")
-
-	// Follow Up-handling routes
 	protectedRouter.HandleFunc("/appraisals/", routes.GetLastAppraisal).Methods("GET")
 	protectedRouter.HandleFunc("/appraisals/", routes.CreateAppraisal).Methods("POST")
 	protectedRouter.HandleFunc("/measurements/", routes.GetMeasurements).Methods("GET")
 	protectedRouter.HandleFunc("/measurements/", routes.CreateMeasurements).Methods("POST")
 	protectedRouter.HandleFunc("/tests/", routes.GetTests).Methods("GET")
 	protectedRouter.HandleFunc("/tests/", routes.CreateTest).Methods("POST")
-
-	// Prescriptions-handling routes
 	protectedRouter.HandleFunc("/prescriptions/", routes.GetPrescriptions).Methods("GET")
 	protectedRouter.HandleFunc("/prescriptions/", routes.CreatePrescription).Methods("POST")
 
 	// Debug routes
 	router.HandleFunc("/notification", DebugNotifications).Methods("GET")
+
+	go handleMessages()
 
 	// Listen on port 80
 	err := http.ListenAndServe(":80", router)
