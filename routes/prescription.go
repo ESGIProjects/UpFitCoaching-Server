@@ -53,7 +53,7 @@ func CreatePrescription(w http.ResponseWriter, r *http.Request) {
 		db.Close()
 
 		print(err.Error())
-		global.SendError(w, "internal_error", http.StatusInternalServerError)
+		global.SendError(w, "prescription_insert_failed", http.StatusNotModified)
 		return
 	}
 
