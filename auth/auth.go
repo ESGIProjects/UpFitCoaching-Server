@@ -26,7 +26,7 @@ func VerifyToken(h http.Handler) http.Handler {
 		tokenSlice := strings.Split(tokenString, " ")
 
 		if len(tokenSlice) != 2 || tokenSlice[0] != "Bearer" {
-			w.WriteHeader(http.StatusUnauthorized)
+			global.SendError(w, "token_error", http.StatusUnauthorized)
 			return
 		}
 
@@ -35,14 +35,14 @@ func VerifyToken(h http.Handler) http.Handler {
 		})
 
 		if err != nil {
-			w.WriteHeader(http.StatusUnauthorized)
+			global.SendError(w, "token_error", http.StatusUnauthorized)
 			return
 		}
 
 		if token.Valid {
 			h.ServeHTTP(w, r)
 		} else {
-			w.WriteHeader(http.StatusUnauthorized)
+			global.SendError(w, "token_not_valid", http.StatusUnauthorized)
 		}
 	})
 }
@@ -55,7 +55,7 @@ func RefreshToken(w http.ResponseWriter, r *http.Request) {
 	tokenSlice := strings.Split(tokenString, " ")
 
 	if len(tokenSlice) != 2 || tokenSlice[0] != "Bearer" {
-		w.WriteHeader(http.StatusBadRequest)
+		global.SendError(w, "token_error", http.StatusBadRequest)
 		return
 	}
 
@@ -64,7 +64,7 @@ func RefreshToken(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
+		global.SendError(w, "token_error", http.StatusBadRequest)
 		return
 	}
 
@@ -73,7 +73,7 @@ func RefreshToken(w http.ResponseWriter, r *http.Request) {
 
 	refreshTokenString, err := CreateToken(userId)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		global.SendError(w, "token_creation_error", http.StatusInternalServerError)
 		return
 	}
 
