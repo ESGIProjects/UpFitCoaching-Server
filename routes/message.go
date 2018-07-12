@@ -20,7 +20,7 @@ func GetMessages(w http.ResponseWriter, r *http.Request) {
 		db.Close()
 
 		print(err.Error())
-		global.SendError(w, "internal_error", http.StatusInternalServerError)
+		global.SendError(w, "parameter_error", http.StatusBadRequest)
 		return
 	}
 
