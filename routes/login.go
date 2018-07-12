@@ -31,7 +31,7 @@ func ExistingMail(w http.ResponseWriter, r *http.Request) {
 		print(err.Error())
 		w.WriteHeader(http.StatusOK)
 	} else {
-		w.WriteHeader(http.StatusFound) // 302 plutôt que 409 ?
+		global.SendError(w, "user_already_exists", http.StatusFound)
 	}
 }
 
@@ -60,7 +60,7 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 	if err == nil {
 		db.Close()
 
-		global.SendError(w, "user_already_exists", http.StatusNotFound)
+		global.SendError(w, "user_already_exists", http.StatusFound)
 		return
 	}
 
@@ -70,7 +70,7 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		db.Close()
 
 		println(err.Error())
-		global.SendError(w, "internal_error", http.StatusNotModified)
+		global.SendError(w, "user_insert_failed", http.StatusNotModified)
 		return
 	}
 
@@ -92,7 +92,7 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		db.Close()
 
 		println(err.Error())
-		global.SendError(w, "internal_error", http.StatusInternalServerError)
+		global.SendError(w, "user_insert_failed", http.StatusNotModified)
 		return
 	}
 
@@ -127,7 +127,7 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		db.Close()
 
 		println(err.Error())
-		global.SendError(w, "internal_error", http.StatusInternalServerError)
+		global.SendError(w, "user_insert_failed", http.StatusNotModified)
 		return
 	}
 
@@ -178,7 +178,7 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if password != typedPassword {
-		global.SendError(w, "user_wrong_password", http.StatusNotFound)
+		global.SendError(w, "user_wrong_password", http.StatusBadRequest)
 		return
 	}
 
@@ -188,7 +188,7 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 		db.Close()
 
 		println(err.Error())
-		global.SendError(w, "internal_error", http.StatusInternalServerError)
+		global.SendError(w, "token_creation_error", http.StatusInternalServerError)
 		return
 	}
 
@@ -215,7 +215,7 @@ func UpdateProfile(w http.ResponseWriter, r *http.Request) {
 		db.Close()
 
 		println(err.Error())
-		global.SendError(w, "internal_error", http.StatusNotModified)
+		global.SendError(w, "parameter_error", http.StatusBadRequest)
 		return
 	}
 
@@ -236,7 +236,7 @@ func UpdateProfile(w http.ResponseWriter, r *http.Request) {
 		db.Close()
 
 		println(err.Error())
-		global.SendError(w, "internal_error", http.StatusNotModified)
+		global.SendError(w, "user_insert_failed", http.StatusNotModified)
 		return
 	}
 
@@ -247,7 +247,7 @@ func UpdateProfile(w http.ResponseWriter, r *http.Request) {
 		db.Close()
 
 		println(err.Error())
-		global.SendError(w, "internal_error", http.StatusNotModified)
+		global.SendError(w, "user_insert_failed", http.StatusNotModified)
 		return
 	}
 
@@ -259,7 +259,7 @@ func UpdateProfile(w http.ResponseWriter, r *http.Request) {
 			db.Close()
 
 			println(err.Error())
-			global.SendError(w, "internal_error", http.StatusNotModified)
+			global.SendError(w, "user_insert_failed", http.StatusNotModified)
 			return
 		}
 	}
@@ -272,7 +272,7 @@ func UpdateProfile(w http.ResponseWriter, r *http.Request) {
 			db.Close()
 
 			println(err.Error())
-			global.SendError(w, "internal_error", http.StatusNotModified)
+			global.SendError(w, "user_insert_failed", http.StatusNotModified)
 			return
 		}
 
@@ -284,7 +284,7 @@ func UpdateProfile(w http.ResponseWriter, r *http.Request) {
 		db.Close()
 
 		println(err.Error())
-		global.SendError(w, "user_update_failed", http.StatusNotModified)
+		global.SendError(w, "user_insert_failed", http.StatusNotModified)
 		return
 	}
 
