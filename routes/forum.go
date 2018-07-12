@@ -38,7 +38,7 @@ func GetThreads(w http.ResponseWriter, r *http.Request) {
 		db.Close()
 
 		print(err.Error())
-		global.SendError(w, "internal_error", http.StatusInternalServerError)
+		global.SendError(w, "parameter_error", http.StatusBadRequest)
 		return
 	}
 
@@ -78,7 +78,7 @@ func GetThread(w http.ResponseWriter, r *http.Request) {
 		db.Close()
 
 		print(err.Error())
-		global.SendError(w, "internal_error", http.StatusInternalServerError)
+		global.SendError(w, "parameter_error", http.StatusBadRequest)
 		return
 	}
 
@@ -125,7 +125,7 @@ func CreateThread(w http.ResponseWriter, r *http.Request) {
 		db.Close()
 
 		print(err.Error())
-		global.SendError(w, "internal_error", http.StatusInternalServerError)
+		global.SendError(w, "internal_error", http.StatusInternalServerError) // 302 thread_insert_failed
 		return
 	}
 
@@ -145,7 +145,7 @@ func CreateThread(w http.ResponseWriter, r *http.Request) {
 		db.Close()
 
 		print(err.Error())
-		global.SendError(w, "internal_error", http.StatusInternalServerError)
+		global.SendError(w, "post_insert_failed", http.StatusNotModified)
 		return
 	}
 
@@ -184,7 +184,7 @@ func AddPost(w http.ResponseWriter, r *http.Request) {
 		db.Close()
 
 		print(err.Error())
-		global.SendError(w, "internal_error", http.StatusInternalServerError)
+		global.SendError(w, "post_insert_failed", http.StatusNotModified)
 		return
 	}
 
