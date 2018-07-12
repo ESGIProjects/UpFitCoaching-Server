@@ -21,7 +21,7 @@ func GetEvents(w http.ResponseWriter, r *http.Request) {
 		db.Close()
 
 		println(err.Error())
-		global.SendError(w, "internal_error", http.StatusInternalServerError)
+		global.SendError(w, "parameter_error", http.StatusBadRequest)
 		return
 	}
 
@@ -31,7 +31,7 @@ func GetEvents(w http.ResponseWriter, r *http.Request) {
 		db.Close()
 
 		println(err.Error())
-		global.SendError(w, "internal_error", http.StatusInternalServerError)
+		global.SendError(w, "user_not_exist", http.StatusNotFound)
 		return
 	}
 
@@ -90,7 +90,7 @@ func AddEvent(w http.ResponseWriter, r *http.Request) {
 		db.Close()
 
 		print(err.Error())
-		global.SendError(w, "internal_error", http.StatusInternalServerError)
+		global.SendError(w, "event_insert_failed", http.StatusNotModified)
 		return
 	}
 
@@ -173,7 +173,7 @@ func UpdateEvent(w http.ResponseWriter, r *http.Request) {
 		db.Close()
 
 		print(err.Error())
-		global.SendError(w, "internal_error", http.StatusInternalServerError)
+		global.SendError(w, "event_not_exist", http.StatusNotFound) // 404 event_not_exist
 		return
 	}
 
@@ -236,7 +236,7 @@ func CancelEvent(w http.ResponseWriter, r *http.Request) {
 		db.Close()
 
 		print(err.Error())
-		global.SendError(w, "event_not_found", http.StatusNotModified)
+		global.SendError(w, "event_not_exist", http.StatusNotFound)
 		return
 	}
 
