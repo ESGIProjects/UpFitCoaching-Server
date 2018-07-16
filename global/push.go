@@ -124,3 +124,13 @@ func EventNotification(token string, event event.Info) (*messaging.Message) {
 
 	return notification
 }
+
+func CancelEventNotification(token string, event event.Info) (*messaging.Message) {
+	notification := BaseNotification(token)
+
+	notification.Notification.Title = event.Name
+	notification.APNS.Payload.Aps.CustomData["type"] = "event"
+	notification.Notification.Body = "Événement annulé."
+
+	return notification
+}

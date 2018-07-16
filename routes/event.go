@@ -7,6 +7,9 @@ import (
 	"server/user"
 	"server/event"
 	"firebase.google.com/go/messaging"
+	"strings"
+	"github.com/dgrijalva/jwt-go"
+	"server/auth"
 )
 
 func GetEvents(w http.ResponseWriter, r *http.Request) {
@@ -250,7 +253,42 @@ func CancelEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO - Notification other user
+	// Send notification to the other user
+	tokenString := r.Header.Get("Authorization")
+	tokenSlice := strings.Split(tokenString, " ")
+
+	if len(tokenSlice) == 2 && tokenSlice[0] == "Bearer" {
+		token, err := jwt.Parse(tokenSlice[1], func (token *jwt.Token) (interface{}, error) {
+			return []byte(auth.SecretKey), nil
+		})
+
+		if err == nil {
+			userId := int64(token.Claims.(jwt.MapClaims)["userId"].(float64))
+			var notifiedUserId int64
+
+			if eventInfo.FirstUser.Id == userId {
+				notifiedUserId = eventInfo.SecondUser.Id
+			} else {
+				notifiedUserId = eventInfo.FirstUser.Id
+			}
+
+			// Send notifications
+			tokens, err := global.GetTokensForUserId(db, notifiedUserId)
+			if err != nil {
+				db.Close()
+				print(err.Error())
+				return
+			}
+
+			notifications := make([]*messaging.Message, 0)
+
+			for _, token := range tokens {
+				notification := global.CancelEventNotification(token, eventInfo)
+				notifications = append(notifications, notification)
+			}
+			global.SendNotifications(notifications...)
+		}
+	}
 
 	w.WriteHeader(http.StatusOK)
 }
