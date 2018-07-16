@@ -36,7 +36,7 @@ func get(db *sql.DB, query *sql.Row, userInfo *Info) (string, error) {
 	userInfo.Address = address.String
 	userInfo.BirthDate = birthDate.String
 
-	if coachId.Valid {
+	if coachId.Valid && *userInfo.Type != 2 {
 		// Create a new UserInfo struct with the coach data
 		coach := Info{}
 		_, err := GetFromId(db, &coach, coachId.Int64)
