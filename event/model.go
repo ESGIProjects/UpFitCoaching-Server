@@ -1,3 +1,6 @@
+// Author: Kévin Le
+// Version 1.0
+
 package event
 
 import (

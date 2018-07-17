@@ -1,3 +1,6 @@
+// Author: Kévin Le
+// Version 1.0
+
 package main
 
 import (
@@ -52,7 +55,7 @@ func main() {
 	protectedRouter.HandleFunc("/prescriptions/", routes.GetPrescriptions).Methods("GET")
 	protectedRouter.HandleFunc("/prescriptions/", routes.CreatePrescription).Methods("POST")
 
-	// Debug routes
+	// Debug route
 	router.HandleFunc("/notification", DebugNotifications).Methods("GET")
 
 	go handleMessages()
@@ -78,8 +81,9 @@ func AddOrUpdateToken(w http.ResponseWriter, r *http.Request) {
 	oldToken := r.PostFormValue("oldToken")
 
 	var query string
-	args := make([]interface{}, 0)
 
+	// Array of args for insert or update
+	args := make([]interface{}, 0)
 
 	if oldToken == "" {
 		// Add

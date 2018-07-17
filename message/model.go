@@ -1,3 +1,6 @@
+// Author: Jason Pierna
+// Version 1.0
+
 package message
 
 import (
